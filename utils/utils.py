@@ -3,19 +3,13 @@ import numpy as np
 import torch
 from torchvision import transforms
 import os
-import matplotlib.pyplot as plt
 from PIL import Image
-
 from models.definitions.vgg_nets import Vgg16, Vgg19, Vgg16Experimental
 
 
 IMAGENET_MEAN_255 = [123.675, 116.28, 103.53]
 IMAGENET_STD_NEUTRAL = [1, 1, 1]
 
-
-#
-# Image manipulation util functions
-#
 
 def load_image(img_path, target_shape=None):
     if not os.path.exists(img_path):
@@ -73,12 +67,6 @@ def get_uint8_range(x):
         raise ValueError(f'Expected numpy array got {type(x)}')
 
 
-#
-# End of image manipulation util functions
-#
-
-
-# initially it takes some time for PyTorch to download the models into local cache
 def prepare_model(content_feature_map_index, model, device):
     # we are not tuning model weights -> we are only tuning optimizing_img's pixels! (that's why requires_grad=False)
     experimental = False

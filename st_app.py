@@ -3,7 +3,19 @@ from reconstruct_image_from_representation import reconstruct_image_from_represe
 from neural_style_transfer import neural_style_transfer
 from PIL import Image
 
-def set_config(content_img=None, style_img=None, saving_freq=1, model='vgg19', optimizer='lbfgs', feature_map_index=2, content_weight=1e5, style_weight=3e4, tv_weight=1e0, init_method='content', noise="white"):
+def set_config(content_img=None, 
+               style_img=None, 
+               saving_freq=1, 
+               model='vgg19', 
+               optimizer='lbfgs', 
+               feature_map_index=2, 
+               content_weight=1e5, 
+               style_weight=3e4, 
+               tv_weight=1e0, 
+               init_method='content', 
+               noise="white"
+               ):
+    
     img_format = (4, '.jpg')
 
     config = {
@@ -26,7 +38,7 @@ def set_config(content_img=None, style_img=None, saving_freq=1, model='vgg19', o
     return config
 
 
-st.set_page_config(page_title='Neural Style Transfer', layout="wide")
+st.set_page_config(layout="wide", page_icon="test_images/mosaic.jpg", page_title='NST')
 st.title("Art Meets AI: Demystifying Neural Style Transfer")
 
 with st.sidebar:
@@ -36,7 +48,8 @@ with st.sidebar:
     st.header("User Inputs")
 
     model = st.radio("Select a model:", ["vgg19", "vgg16"], 
-                     help="VGG-19 has more layers and may capture more detailed features, but it could be slower for training. VGG-16 is lighter and faster but might be less precise.")
+                     help="VGG-19 has more layers and may capture more detailed features, but it trains slower. VGG-16 is lighter and faster but might be less precise.")
+    
     optimizer = st.radio("Select an optimizer:", ['lbfgs', 'Adam'],
                          help="LBFGS is a more precise optimizer but requires more memory. Adam is efficent but takes longer to converge.")
 

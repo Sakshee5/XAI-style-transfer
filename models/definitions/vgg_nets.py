@@ -2,20 +2,15 @@ from collections import namedtuple
 import torch
 from torchvision import models
 
-"""
-    More detail about the VGG architecture (if you want to understand magic/hardcoded numbers) can be found here:
-    
-    https://github.com/pytorch/vision/blob/3c254fb7af5f8af252c24e89949c54a3461ff0be/torchvision/models/vgg.py
-"""
-
+# Source: https://github.com/pytorch/vision/blob/3c254fb7af5f8af252c24e89949c54a3461ff0be/torchvision/models/vgg.py
 
 class Vgg16(torch.nn.Module):
     """Only those layers are exposed which have already proven to work nicely."""
-    def __init__(self, requires_grad=False, show_progress=False):
+    def __init__(self, content_feature_map_index, requires_grad=False, show_progress=False):
         super().__init__()
         vgg_pretrained_features = models.vgg16(pretrained=True, progress=show_progress).features
         self.layer_names = ['relu1_2', 'relu2_2', 'relu3_3', 'relu4_3']
-        self.content_feature_maps_index = 1  # relu2_2
+        self.content_feature_maps_index = content_feature_map_index  # relu2_2
         self.style_feature_maps_indices = list(range(len(self.layer_names)))  # all layers used for style representation
 
         self.slice1 = torch.nn.Sequential()
@@ -50,11 +45,11 @@ class Vgg16(torch.nn.Module):
 
 class Vgg16Experimental(torch.nn.Module):
     """Everything exposed so you can play with different combinations for style and content representation"""
-    def __init__(self, requires_grad=False, show_progress=False):
+    def __init__(self, content_feature_map_index, requires_grad=False, show_progress=False):
         super().__init__()
         vgg_pretrained_features = models.vgg16(pretrained=True, progress=show_progress).features
         self.layer_names = ['relu1_1', 'relu2_1', 'relu2_2', 'relu3_1', 'relu3_2', 'relu4_1', 'relu4_3', 'relu5_1']
-        self.content_feature_maps_index = 4
+        self.content_feature_maps_index = content_feature_map_index
         self.style_feature_maps_indices = list(range(len(self.layer_names)))  # all layers used for style representation
 
         self.conv1_1 = vgg_pretrained_features[0]

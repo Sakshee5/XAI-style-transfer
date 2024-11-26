@@ -142,13 +142,4 @@ def display_gram_matrices(gram_matrices, config, style_feature_maps_indices_name
         
         placeholder.image(gram_matrix, caption=f'Gram matrix from layer {style_feature_maps_indices_names[1][i]}', use_container_width=True)
         time.sleep(1)
-    
-def display_optimized_image(dump_path, num_iterations, placeholder):
-   
-    for i in range(num_iterations):
-        img_path = os.path.join(dump_path, f'{str(i).zfill(4)}.jpg')
-        if i % 5 == 0 and os.path.exists(img_path):
-            img = cv.imread(img_path)
-            placeholder.image(img, caption=f"Iteration {i}", use_container_width=True)
-            time.sleep(1)
 

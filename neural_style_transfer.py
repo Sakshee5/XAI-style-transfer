@@ -28,17 +28,17 @@ def build_loss(neural_net, optimizing_img, target_representations, content_featu
 
 
 def make_tuning_step(neural_net, optimizer, target_representations, content_feature_maps_index, style_feature_maps_indices, config):
+    
     # Builds function that performs a step in the tuning loop
     def tuning_step(optimizing_img):
         total_loss, content_loss, style_loss, tv_loss = build_loss(neural_net, optimizing_img, target_representations, content_feature_maps_index, style_feature_maps_indices, config)
-        # Computes gradients
         total_loss.backward()
+
         # Updates parameters and zeroes gradients
         optimizer.step()
         optimizer.zero_grad()
         return total_loss, content_loss, style_loss, tv_loss
 
-    # Returns the function that will be called inside the tuning loop
     return tuning_step
 
 
@@ -65,7 +65,7 @@ def neural_style_transfer(config, placeholder):
         init_img = style_img_resized
 
 
-    # we are tuning optimizing_img's pixels! (that's why requires_grad=True)
+    # we are tuning optimizing_img's pixels. (that's why requires_grad=True)
     optimizing_img = Variable(init_img, requires_grad=True)
 
     neural_net, content_feature_maps_index_name, style_feature_maps_indices_names = utils.prepare_model(config['content_feature_map_index'], config['model'], device)
@@ -78,15 +78,11 @@ def neural_style_transfer(config, placeholder):
     target_style_representation = [utils.gram_matrix(x) for cnt, x in enumerate(style_img_set_of_feature_maps) if cnt in style_feature_maps_indices_names[0]]
     target_representations = [target_content_representation, target_style_representation]
 
-    # magic numbers in general are a big no no - some things in this code are left like this by design to avoid clutter
     num_of_iterations = {
-        "lbfgs": 1000,
+        "lbfgs": 500,
         "adam": 3000,
     }
 
-    #
-    # Start of optimization procedure
-    #
     if config['optimizer'] == 'adam':
         optimizer = Adam((optimizing_img,), lr=1e1)
         tuning_step = make_tuning_step(neural_net, optimizer, target_representations, content_feature_maps_index_name[0], style_feature_maps_indices_names[0], config)
@@ -100,7 +96,6 @@ def neural_style_transfer(config, placeholder):
                 placeholder.image(current_img, caption=f"Iteration {cnt}", use_container_width=True)
 
     elif config['optimizer'] == 'lbfgs':
-        # line_search_fn does not seem to have significant impact on result
         optimizer = LBFGS((optimizing_img,), max_iter=num_of_iterations['lbfgs'], line_search_fn='strong_wolfe')
         cnt = 0
 
