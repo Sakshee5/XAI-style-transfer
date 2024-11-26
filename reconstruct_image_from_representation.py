@@ -7,6 +7,8 @@ import numpy as np
 import streamlit as st
 import time
 import cv2 as cv
+from PIL import Image
+from io import BytesIO
 
 def make_tuning_step(model, optimizer, target_representation, content_feature_maps_index, style_feature_maps_indices, content):
 
@@ -34,11 +36,11 @@ def make_tuning_step(model, optimizer, target_representation, content_feature_ma
 
 def reconstruct_image_from_representation(config, representation_placeholder, video_placeholder):
     
-    img_path = os.path.join(config['content_images_dir'], config['content_img_name']) if config['content_img_name'] else os.path.join(config['style_images_dir'], config['style_img_name'])
+    uploaded_image = config['content_img'] if config['content_img'] else config['style_img']
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    img = utils.prepare_img(img_path, config['height'], device)
-
+    img = utils.prepare_img_from_pil(uploaded_image, config['height'], device) 
+    
     if config['noise'] == 'white':
         white_noise_img = np.random.uniform(-90., 90., img.shape).astype(np.float32)
         init_img = torch.from_numpy(white_noise_img).float().to(device)
@@ -46,7 +48,7 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
     else:
         gaussian_noise_img = np.random.normal(loc=0, scale=90., size=img.shape).astype(np.float32)
         init_img = torch.from_numpy(gaussian_noise_img).float().to(device)
-        
+
     optimizing_img = Variable(init_img, requires_grad=True)
 
     neural_net, content_feature_maps_index_name, style_feature_maps_indices_names = utils.prepare_model(config['content_feature_map_index'], config['model'], device)
@@ -55,7 +57,7 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
 
     set_of_feature_maps = neural_net(img)
 
-    if config['content_img_name']:
+    if config['content_img']:
         target_content_representation = set_of_feature_maps[content_feature_maps_index_name[0]].squeeze(axis=0)
 
         # Display feature maps in the first column
@@ -64,9 +66,9 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
         target_style_representation = [utils.gram_matrix(fmaps) for i, fmaps in enumerate(set_of_feature_maps) if i in style_feature_maps_indices_names[0]]
         display_gram_matrices(target_style_representation, config, style_feature_maps_indices_names, representation_placeholder)
 
-    target_representation = target_content_representation if config['content_img_name'] else target_style_representation
+    target_representation = target_content_representation if config['content_img'] else target_style_representation
 
-    content = True if config['content_img_name'] else False
+    content = True if config['content_img'] else False
 
     if config['optimizer'] == 'adam':
         optimizer = Adam((optimizing_img,))

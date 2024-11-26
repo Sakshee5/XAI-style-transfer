@@ -1,14 +1,9 @@
 import streamlit as st
 from reconstruct_image_from_representation import reconstruct_image_from_representation
-import os
 from neural_style_transfer import neural_style_transfer
+from PIL import Image
 
-def set_config(content_img_path=None, style_img_path=None, saving_freq=1, model='vgg19', optimizer='lbfgs', feature_map_index=2, content_weight=1e5, style_weight=3e4, tv_weight=1e0, init_method='content', noise="white"):
-    # Default directories and configuration setup
-    default_resource_dir = os.path.join(os.path.dirname(__file__), 'data')
-    content_images_dir = os.path.join(default_resource_dir, 'content-images')
-    style_images_dir = os.path.join(default_resource_dir, 'style-images')
-    output_img_dir = os.path.join(default_resource_dir, 'output-images')
+def set_config(content_img=None, style_img=None, saving_freq=1, model='vgg19', optimizer='lbfgs', feature_map_index=2, content_weight=1e5, style_weight=3e4, tv_weight=1e0, init_method='content', noise="white"):
     img_format = (4, '.jpg')
 
     config = {
@@ -16,9 +11,8 @@ def set_config(content_img_path=None, style_img_path=None, saving_freq=1, model=
         "should_visualize_representation": True,
         "height": 250,
         "saving_freq": saving_freq, 
-        "content_images_dir": content_images_dir,
-        "style_images_dir": style_images_dir,
-        "output_img_dir": output_img_dir,
+        "content_img": content_img,
+        "style_img": style_img,
         "img_format": img_format,
         "model": model,
         "optimizer": optimizer,
@@ -29,10 +23,6 @@ def set_config(content_img_path=None, style_img_path=None, saving_freq=1, model=
         "init_method": init_method,
         "noise": noise,
     }
-
-    config['content_img_name'] = content_img_path if content_img_path else None
-    config['style_img_name'] = style_img_path if style_img_path else None
-
     return config
 
 
@@ -51,7 +41,7 @@ with st.sidebar:
                          help="LBFGS is a more precise optimizer but requires more memory. Adam is efficent but takes longer to converge.")
 
 if tab == "Home":
-    with open("how_it_works.md", "r") as f:
+    with open("description.md", "r") as f:
         markdown_text = f.read()
 
     st.write(markdown_text)
@@ -65,6 +55,7 @@ Visualize how the reconstruction process starts with noise and iteratively refin
     content_image = st.file_uploader("Upload Content Image (.png, .jpeg, .jpg)", type=["png", "jpeg", "jpg"], key='content_tab')
 
     if content_image:
+        content_image = Image.open(content_image)
         st.image(content_image, width=250)
         st.markdown("---")
         col1, col2 = st.columns(2)
@@ -90,7 +81,7 @@ Visualize how the reconstruction process starts with noise and iteratively refin
 
     if content_image and start_content_reconstruction:
         st.write("Reconstructing content from noise! Watch the progress below...")
-        config = set_config(content_img_path=content_image.name, style_img_path=None, feature_map_index=feature_map_index, noise=init_noise)
+        config = set_config(content_img=content_image, style_img=None, feature_map_index=feature_map_index, noise=init_noise)
         
         col1, col2, col3 = st.columns(3)
 
@@ -116,6 +107,7 @@ This process insight into how neural networks learn and represent stylistic aspe
     style_image = st.file_uploader("Upload Style Image (.png, .jpeg, .jpg)", type=["png", "jpeg", "jpg"], key='style_tab')
 
     if style_image:
+        style_image = Image.open(style_image)
         st.image(style_image, width=250)
 
         st.markdown("---")
@@ -132,7 +124,7 @@ This process insight into how neural networks learn and represent stylistic aspe
 
     if style_image and start_style_reconstruction:
         st.write("Reconstructing style from noise! Watch the progress below...")
-        config = set_config(content_img_path=None, style_img_path=style_image.name, noise=init_noise)
+        config = set_config(content_img=None, style_img=style_image, noise=init_noise)
         
         col1, col2, col3 = st.columns(3)
 
@@ -160,6 +152,7 @@ elif tab == "Neural Style Transfer":
         content_image = st.file_uploader("Upload Content Image (.png, .jpeg, .jpg)", type=["png", "jpeg", "jpg"], key='content_tab2')
 
         if content_image:
+            content_image = Image.open(content_image)
             st.image(content_image, width=250)
 
     with col2:
@@ -167,6 +160,7 @@ elif tab == "Neural Style Transfer":
         style_image = st.file_uploader("Upload Style Image (.png, .jpeg, .jpg)", type=["png", "jpeg", "jpg"], key='style_tab2')
 
         if style_image:
+            style_image = Image.open(style_image)
             st.image(style_image, width=250)
 
     if content_image and style_image:
@@ -223,13 +217,15 @@ elif tab == "Neural Style Transfer":
             with col10:
                 st.markdown("""Choose the random noise initialization to start reconstruction""")
             st.markdown("---")
+        else:
+            init_noise = None
 
 
         start_style_transfer = st.button('Start Style Transfer', key='style_transfer')
 
         if start_style_transfer and content_image and style_image:
             st.write("Transferring style! Watch the progress below...")
-            config = set_config(content_img_path=content_image.name, style_img_path=style_image.name, content_weight=content_weight, style_weight=style_weight, tv_weight=tv_weight, init_method=init_method, noise=init_noise)
+            config = set_config(content_img=content_image, style_img=style_image, content_weight=content_weight, style_weight=style_weight, tv_weight=tv_weight, init_method=init_method, noise=init_noise)
 
             col1, col2, col3 = st.columns(3)
 
@@ -239,8 +235,6 @@ elif tab == "Neural Style Transfer":
 
             with col2:
                 st.write("Neural Style Transfer Progress")
-                content_img_path = os.path.join(config['content_images_dir'], config['content_img_name'])
-                style_img_path = os.path.join(config['style_images_dir'], config['style_img_name'])
                 style_transfer_video_placeholder = st.empty()
 
             with col3:

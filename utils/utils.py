@@ -4,8 +4,7 @@ import torch
 from torchvision import transforms
 import os
 import matplotlib.pyplot as plt
-import streamlit as st
-import time
+from PIL import Image
 
 from models.definitions.vgg_nets import Vgg16, Vgg19, Vgg16Experimental
 
@@ -52,6 +51,57 @@ def prepare_img(img_path, target_shape, device):
     img = transform(img).to(device).unsqueeze(0)
 
     return img
+
+def prepare_img_from_pil(image: Image.Image, target_shape: int, device: torch.device):
+    """
+    Prepares an image from a PIL.Image object for use in PyTorch models.
+    """
+    transform = transforms.Compose([
+        transforms.Resize((target_shape, target_shape)),  # Resize to target shape
+        transforms.ToTensor(),
+        transforms.Lambda(lambda x: x.mul(255)),  # Scale to [0, 255]
+        transforms.Normalize(mean=IMAGENET_MEAN_255, std=IMAGENET_STD_NEUTRAL)
+    ])
+    
+    # Transform the image
+    img_tensor = transform(image).to(device).unsqueeze(0)
+    
+    return img_tensor
+
+def prepare_img_from_pil(image: Image.Image, target_shape, device: torch.device):
+    """
+    Prepares an image from a PIL.Image object for use in PyTorch models.
+    Args:
+        image (PIL.Image): Input image.
+        target_shape (int, tuple, or np.ndarray): Desired size. Integer for square resizing,
+            tuple for (height, width), or NumPy array convertible to tuple.
+        device (torch.device): The device to place the tensor on (CPU/GPU).
+    Returns:
+        torch.Tensor: Transformed image tensor.
+    """
+    if image.mode != 'RGB':
+        image = image.convert('RGB')
+        
+    # Ensure target_shape is a tuple (height, width)
+    if isinstance(target_shape, np.ndarray):
+        target_shape = tuple(target_shape)  # Convert array to tuple
+    elif isinstance(target_shape, int):
+        target_shape = (target_shape, target_shape)  # Square resizing
+
+    transform = transforms.Compose([
+        transforms.Resize(target_shape),  # Resize to the given shape
+        transforms.ToTensor(),
+        transforms.Lambda(lambda x: x.mul(255)),  # Scale to [0, 255]
+        transforms.Normalize(mean=IMAGENET_MEAN_255, std=IMAGENET_STD_NEUTRAL)
+    ])
+    
+    # Transform the image
+    img_tensor = transform(image).to(device).unsqueeze(0)
+    
+    return img_tensor
+
+
+
 
 
 def save_image(img, img_path):

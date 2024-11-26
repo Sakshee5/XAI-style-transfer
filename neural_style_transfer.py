@@ -6,6 +6,8 @@ import numpy as np
 import os
 import time
 import cv2 as cv
+from io import BytesIO
+from PIL import Image
 
 
 def build_loss(neural_net, optimizing_img, target_representations, content_feature_maps_index, style_feature_maps_indices, config):
@@ -46,17 +48,10 @@ def make_tuning_step(neural_net, optimizer, target_representations, content_feat
 
 
 def neural_style_transfer(config, placeholder):
-    content_img_path = os.path.join(config['content_images_dir'], config['content_img_name'])
-    style_img_path = os.path.join(config['style_images_dir'], config['style_img_name'])
-
-    out_dir_name = 'combined_' + config['optimizer'] + '_cw_' + str(config['content_weight']) + "_sw_" + str(config['style_weight']) + "_tvw_" + str(config['tv_weight']) + "_init_" + config['init_method'] + os.path.split(content_img_path)[1].split('.')[0] + '_' + os.path.split(style_img_path)[1].split('.')[0]
-    dump_path = os.path.join(config['output_img_dir'], out_dir_name)
-    os.makedirs(dump_path, exist_ok=True)
-
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    content_img = utils.prepare_img(content_img_path, config['height'], device)
-    style_img = utils.prepare_img(style_img_path, config['height'], device)
+    content_img = utils.prepare_img_from_pil(config["content_img"], config['height'], device) 
+    style_img_resized = utils.prepare_img_from_pil(config["style_img"], tuple(content_img.shape[2:]), device)
 
     if config['init_method'] == 'random':
         if config['noise'] == 'white':
@@ -66,14 +61,14 @@ def neural_style_transfer(config, placeholder):
         else:
             gaussian_noise_img = np.random.normal(loc=0, scale=90., size=content_img.shape).astype(np.float32)
             init_img = torch.from_numpy(gaussian_noise_img).float().to(device)
-            
+
     elif config['init_method'] == 'content':
         init_img = content_img
     else:
         # init image has same dimension as content image - this is a hard constraint
         # feature maps need to be of same size for content image and init image
-        style_img_resized = utils.prepare_img(style_img_path, np.asarray(content_img.shape[2:]), device)
         init_img = style_img_resized
+
 
     # we are tuning optimizing_img's pixels! (that's why requires_grad=True)
     optimizing_img = Variable(init_img, requires_grad=True)
@@ -82,7 +77,7 @@ def neural_style_transfer(config, placeholder):
     print(f'Using {config["model"]} in the optimization procedure.')
 
     content_img_set_of_feature_maps = neural_net(content_img)
-    style_img_set_of_feature_maps = neural_net(style_img)
+    style_img_set_of_feature_maps = neural_net(style_img_resized)
 
     target_content_representation = content_img_set_of_feature_maps[content_feature_maps_index_name[0]].squeeze(axis=0)
     target_style_representation = [utils.gram_matrix(x) for cnt, x in enumerate(style_img_set_of_feature_maps) if cnt in style_feature_maps_indices_names[0]]
