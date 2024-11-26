@@ -1,12 +1,10 @@
 import utils.utils as utils
-import os
 import torch
 from torch.autograd import Variable
 from torch.optim import Adam, LBFGS
 import numpy as np
 import streamlit as st
 import time
-import cv2 as cv
 
 def make_tuning_step(model, optimizer, target_representation, content_feature_maps_index, style_feature_maps_indices, content):
 
@@ -32,7 +30,7 @@ def make_tuning_step(model, optimizer, target_representation, content_feature_ma
 
     return tuning_step
 
-def reconstruct_image_from_representation(config, representation_placeholder, video_placeholder):
+def reconstruct_image_from_representation(config, representation_placeholder, video_placeholder, text_placeholder_1=None, text_placeholder_2=None):
     
     uploaded_image = config['content_img'] if config['content_img'] else config['style_img']
 
@@ -52,7 +50,7 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
 
     neural_net, content_feature_maps_index_name, style_feature_maps_indices_names = utils.prepare_model(config['content_feature_map_index'], config['model'], device)
 
-    num_of_iterations = {'adam': 3000, 'lbfgs': 350}
+    num_of_iterations = {'adam': 3000, 'lbfgs': 50}
 
     set_of_feature_maps = neural_net(img)
 
@@ -60,7 +58,7 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
         target_content_representation = set_of_feature_maps[content_feature_maps_index_name[0]].squeeze(axis=0)
 
         # Display feature maps in the first column
-        display_feature_maps(target_content_representation, representation_placeholder)
+        display_feature_maps(target_content_representation, representation_placeholder, text_placeholder_1)
     else:
         target_style_representation = [utils.gram_matrix(fmaps) for i, fmaps in enumerate(set_of_feature_maps) if i in style_feature_maps_indices_names[0]]
         display_gram_matrices(target_style_representation, style_feature_maps_indices_names, representation_placeholder)
@@ -76,11 +74,12 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
         for it in range(num_of_iterations[config['optimizer']]):
             loss, _ = tuning_step(optimizing_img)
             with torch.no_grad():
-                print(f'Iteration: {it}, current {"content" if content else "style"} loss={loss:10.8f}')
+                text_placeholder_2.write(f'Iteration: {it}/{num_of_iterations[config['optimizer']] + 5}, loss={loss:10.8f}')
                 current_img = optimizing_img.clone().squeeze(0).cpu().numpy()
                 current_img = utils.to_image_format(current_img)  # Normalize and convert to uint8
 
                 video_placeholder.image(current_img, caption=f"Iteration {it}", use_container_width=True)
+                st.session_state.content_reconstruct.append(current_img)
              
 
     elif config['optimizer'] == 'lbfgs':
@@ -105,13 +104,13 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
 
             # Log the loss and gradients
             with torch.no_grad():
-                print(f'Iteration: {cnt}, current {"content" if content else "style"} loss={loss.item()}')
+                text_placeholder_2.write(f'Iteration: {cnt}/{num_of_iterations[config['optimizer']] + 5}, loss={loss.item()}')
              
                 current_img = optimizing_img.clone().squeeze(0).cpu().numpy()
                 current_img = utils.to_image_format(current_img)  # Normalize and convert to uint8
 
                 video_placeholder.image(current_img, caption=f"Iteration {cnt}", use_container_width=True)
-            
+                st.session_state.content_reconstruct.append(current_img)
                 cnt += 1
 
             return loss
@@ -120,17 +119,21 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
 
         optimizer.step(closure)
 
-def display_feature_maps(feature_maps, placeholder):
+def display_feature_maps(feature_maps, placeholder, text_placeholder_1):
     num_of_feature_maps = feature_maps.size()[0]
-    st.write(f'Number of feature maps: {num_of_feature_maps}')
+    text_placeholder_1.write(f'Number of feature maps: {num_of_feature_maps}')
     time.sleep(1)
 
-    for i in range(5):
+    for i in range(len(feature_maps)):
         feature_map = feature_maps[i].to('cpu').numpy()
         feature_map = np.uint8(utils.get_uint8_range(feature_map))
-        placeholder.image(feature_map, caption=f"Feature Map {i}", use_container_width=True)
-        time.sleep(1)
 
+        if i<5:
+            placeholder.image(feature_map, caption=f"Feature Map {i}", use_container_width=True)
+            time.sleep(1)
+
+        st.session_state.feature_maps.append(feature_map)
+        
 
 def display_gram_matrices(gram_matrices, style_feature_maps_indices_names, placeholder):
     num_of_gram_matrices = len(gram_matrices)

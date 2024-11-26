@@ -2,6 +2,23 @@ import streamlit as st
 from reconstruct_image_from_representation import reconstruct_image_from_representation
 from neural_style_transfer import neural_style_transfer
 from PIL import Image
+import numpy as np
+import utils.utils as utils
+
+if "feature_maps" not in st.session_state:
+    st.session_state['feature_maps'] = []
+
+if "content_reconstruct" not in st.session_state:
+    st.session_state['content_reconstruct'] = []
+
+if "style_reconstruct" not in st.session_state:
+    st.session_state['style_reconstruct'] = []
+
+if "style_transfer" not in st.session_state:
+    st.session_state['style_transfer'] = []
+
+if "content_reconstruct_complete" not in st.session_state:
+    st.session_state['content_reconstruct_complete'] = False
 
 def set_config(content_img=None, 
                style_img=None, 
@@ -63,6 +80,7 @@ Visualize how the reconstruction process starts with noise and iteratively refin
         content_image = Image.open(content_image)
         st.image(content_image, width=250)
         st.markdown("---")
+        st.subheader("Tune Parameters..")
         col1, col2 = st.columns(2)
 
         with col1:
@@ -79,13 +97,11 @@ Visualize how the reconstruction process starts with noise and iteratively refin
 
         with col4:
             st.markdown("""Choose the random noise initialization to start reconstruction""")
-        st.markdown("---")
-
 
         start_content_reconstruction = st.button('Start Reconstruction', key='content_reconstruction')
 
     if content_image and start_content_reconstruction:
-        st.write("Reconstructing content from noise! Watch the progress below...")
+        st.subheader("Reconstructing content from noise! Watch the progress below...")
         config = set_config(content_img=content_image, style_img=None, feature_map_index=feature_map_index, noise=init_noise)
         
         col1, col2, col3 = st.columns(3)
@@ -93,16 +109,47 @@ Visualize how the reconstruction process starts with noise and iteratively refin
         with col1:
             st.write("Feature Maps")
             feature_map_placeholder = st.empty() 
+            text_placeholder_1 = st.empty()
         
         with col2:
             st.write("Content Reconstruction Progress")
             video_placeholder = st.empty()
+            text_placeholder_2 = st.empty()
 
         with col3:
             st.write("Original Content Image")
             st.image(content_image, use_container_width=True)
 
-        reconstruct_image_from_representation(config, feature_map_placeholder, video_placeholder)
+        reconstruct_image_from_representation(config, feature_map_placeholder, video_placeholder, text_placeholder_1, text_placeholder_2)
+        st.session_state.content_reconstruct_complete = True
+        feature_map_placeholder.empty()
+        video_placeholder.empty()
+        text_placeholder_1.empty()
+        text_placeholder_2.empty()
+        col1.empty()
+        col2.empty()
+        col3.empty()
+
+    if st.session_state.content_reconstruct_complete:
+        st.markdown("---")
+        st.subheader("Use the sliders to explore the reconstruction progress..")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            feature_map_no = st.slider("Feature Map", min_value=0, max_value=len(st.session_state.feature_maps)-1, value=0) 
+            st.image(st.session_state.feature_maps[feature_map_no], caption=f"Feature Map {feature_map_no}", use_container_width=True)
+        
+        with col2:
+            content_reconstruct_no = st.slider("Iteration", min_value=1, max_value=len(st.session_state.content_reconstruct)-1, value=1) 
+            st.image(st.session_state.content_reconstruct[content_reconstruct_no], caption=f"Iteration {content_reconstruct_no}", use_container_width=True)
+
+        with col3:
+            st.write('')
+            st.write('')
+            st.write('')
+            st.write('')
+            st.write('')
+            st.write('')
+            st.image(content_image, caption="Original Content Image", use_container_width=True)
 
 elif tab == "Style Reconstruction":
     st.subheader("Style Reconstruction")
