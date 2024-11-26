@@ -45,8 +45,8 @@ def make_tuning_step(neural_net, optimizer, target_representations, content_feat
 def neural_style_transfer(config, placeholder):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    content_img = utils.prepare_img_from_pil(config["content_img"], config['height'], device) 
-    style_img_resized = utils.prepare_img_from_pil(config["style_img"], tuple(content_img.shape[2:]), device)
+    content_img = utils.prepare_img_from_pil(config["content_img"], device) 
+    style_img_resized = utils.prepare_img_from_pil(config["style_img"], device)
 
     if config['init_method'] == 'random':
         if config['noise'] == 'white':

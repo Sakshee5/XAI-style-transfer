@@ -37,7 +37,8 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
     uploaded_image = config['content_img'] if config['content_img'] else config['style_img']
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    img = utils.prepare_img_from_pil(uploaded_image, config['height'], device) 
+    
+    img = utils.prepare_img_from_pil(uploaded_image, device) 
     
     if config['noise'] == 'white':
         white_noise_img = np.random.uniform(-90., 90., img.shape).astype(np.float32)
@@ -62,7 +63,7 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
         display_feature_maps(target_content_representation, representation_placeholder)
     else:
         target_style_representation = [utils.gram_matrix(fmaps) for i, fmaps in enumerate(set_of_feature_maps) if i in style_feature_maps_indices_names[0]]
-        display_gram_matrices(target_style_representation, config, style_feature_maps_indices_names, representation_placeholder)
+        display_gram_matrices(target_style_representation, style_feature_maps_indices_names, representation_placeholder)
 
     target_representation = target_content_representation if config['content_img'] else target_style_representation
 
@@ -131,7 +132,7 @@ def display_feature_maps(feature_maps, placeholder):
         time.sleep(1)
 
 
-def display_gram_matrices(gram_matrices, config, style_feature_maps_indices_names, placeholder):
+def display_gram_matrices(gram_matrices, style_feature_maps_indices_names, placeholder):
     num_of_gram_matrices = len(gram_matrices)
     st.write(f'Number of Gram matrices: {num_of_gram_matrices}')
     time.sleep(1)

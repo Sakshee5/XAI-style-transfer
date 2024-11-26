@@ -31,18 +31,17 @@ def load_image(img_path, target_shape=None):
     return img
 
 
-def prepare_img_from_pil(image: Image.Image, target_shape, device: torch.device):
+def prepare_img_from_pil(image: Image.Image, device: torch.device):
     """
     Prepares an image from a PIL.Image object for use in PyTorch models.
     """
     if image.mode != 'RGB':
         image = image.convert('RGB')
 
-    # Ensure target_shape is a tuple (height, width)
-    if isinstance(target_shape, np.ndarray):
-        target_shape = tuple(target_shape)  # Convert array to tuple
-    elif isinstance(target_shape, int):
-        target_shape = (target_shape, target_shape)  # Square resizing
+    original_width, original_height = image.size
+    new_width = 250
+    new_height = int((new_width / original_width) * original_height)
+    target_shape = (new_height, new_width)
 
     transform = transforms.Compose([
         transforms.Resize(target_shape),  # Resize to the given shape
