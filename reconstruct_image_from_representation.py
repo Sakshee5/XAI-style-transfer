@@ -61,7 +61,7 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
         display_feature_maps(target_content_representation, representation_placeholder, text_placeholder_1)
     else:
         target_style_representation = [utils.gram_matrix(fmaps) for i, fmaps in enumerate(set_of_feature_maps) if i in style_feature_maps_indices_names[0]]
-        display_gram_matrices(target_style_representation, style_feature_maps_indices_names, representation_placeholder)
+        display_gram_matrices(target_style_representation, style_feature_maps_indices_names, representation_placeholder, text_placeholder_1)
 
     target_representation = target_content_representation if config['content_img'] else target_style_representation
 
@@ -74,12 +74,16 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
         for it in range(num_of_iterations[config['optimizer']]):
             loss, _ = tuning_step(optimizing_img)
             with torch.no_grad():
-                text_placeholder_2.write(f'Iteration: {it}/{num_of_iterations[config['optimizer']] + 5}, loss={loss:10.8f}')
+                text_placeholder_2.write(f'Iteration: {it}, loss={loss:10.8f}')
                 current_img = optimizing_img.clone().squeeze(0).cpu().numpy()
                 current_img = utils.to_image_format(current_img)  # Normalize and convert to uint8
 
                 video_placeholder.image(current_img, caption=f"Iteration {it}", use_container_width=True)
-                st.session_state.content_reconstruct.append(current_img)
+
+                if config['content_img']:
+                    st.session_state.content_reconstruct.append(current_img)
+                else:
+                    st.session_state.style_reconstruct.append(current_img)
              
 
     elif config['optimizer'] == 'lbfgs':
@@ -104,13 +108,16 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
 
             # Log the loss and gradients
             with torch.no_grad():
-                text_placeholder_2.write(f'Iteration: {cnt}/{num_of_iterations[config['optimizer']] + 5}, loss={loss.item()}')
+                text_placeholder_2.write(f'Iteration: {cnt}, loss={loss.item()}')
              
                 current_img = optimizing_img.clone().squeeze(0).cpu().numpy()
                 current_img = utils.to_image_format(current_img)  # Normalize and convert to uint8
 
                 video_placeholder.image(current_img, caption=f"Iteration {cnt}", use_container_width=True)
-                st.session_state.content_reconstruct.append(current_img)
+                if config['content_img']:
+                    st.session_state.content_reconstruct.append(current_img)
+                else:
+                    st.session_state.style_reconstruct.append(current_img)
                 cnt += 1
 
             return loss
@@ -135,9 +142,9 @@ def display_feature_maps(feature_maps, placeholder, text_placeholder_1):
         st.session_state.feature_maps.append(feature_map)
         
 
-def display_gram_matrices(gram_matrices, style_feature_maps_indices_names, placeholder):
+def display_gram_matrices(gram_matrices, style_feature_maps_indices_names, placeholder, text_placeholder):
     num_of_gram_matrices = len(gram_matrices)
-    st.write(f'Number of Gram matrices: {num_of_gram_matrices}')
+    text_placeholder.write(f'Number of Gram matrices: {num_of_gram_matrices}')
     time.sleep(1)
 
     for i in range(num_of_gram_matrices):
@@ -146,4 +153,5 @@ def display_gram_matrices(gram_matrices, style_feature_maps_indices_names, place
         
         placeholder.image(gram_matrix, caption=f'Gram matrix from layer {style_feature_maps_indices_names[1][i]}', use_container_width=True)
         time.sleep(1)
+        st.session_state.gram_matrices.append(gram_matrix)
 
