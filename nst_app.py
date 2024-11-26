@@ -5,7 +5,6 @@ from PIL import Image
 
 def set_config(content_img=None, 
                style_img=None, 
-               saving_freq=1, 
                model='vgg19', 
                optimizer='lbfgs', 
                feature_map_index=2, 
@@ -15,17 +14,10 @@ def set_config(content_img=None,
                init_method='content', 
                noise="white"
                ):
-    
-    img_format = (4, '.jpg')
 
     config = {
-        "should_reconstruct_content": True,
-        "should_visualize_representation": True,
-        "height": 250,
-        "saving_freq": saving_freq, 
         "content_img": content_img,
         "style_img": style_img,
-        "img_format": img_format,
         "model": model,
         "optimizer": optimizer,
         "content_feature_map_index": feature_map_index,
@@ -50,7 +42,7 @@ with st.sidebar:
     model = st.radio("Select a model:", ["vgg19", "vgg16"], 
                      help="VGG-19 has more layers and may capture more detailed features, but it trains slower. VGG-16 is lighter and faster but might be less precise.")
     
-    optimizer = st.radio("Select an optimizer:", ['lbfgs', 'Adam'],
+    optimizer = st.radio("Select an optimizer:", ['lbfgs', 'adam'],
                          help="LBFGS is a more precise optimizer but requires more memory. Adam is efficent but takes longer to converge.")
 
 if tab == "Home":
