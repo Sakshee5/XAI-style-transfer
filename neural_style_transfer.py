@@ -45,7 +45,7 @@ def make_tuning_step(neural_net, optimizer, target_representations, content_feat
     return tuning_step
 
 
-def neural_style_transfer(config, placeholder, progress_bar):
+def neural_style_transfer(config, placeholder):
     content_img_path = os.path.join(config['content_images_dir'], config['content_img_name'])
     style_img_path = os.path.join(config['style_images_dir'], config['style_img_name'])
 
@@ -59,9 +59,14 @@ def neural_style_transfer(config, placeholder, progress_bar):
     style_img = utils.prepare_img(style_img_path, config['height'], device)
 
     if config['init_method'] == 'random':
-        # white_noise_img = np.random.uniform(-90., 90., content_img.shape).astype(np.float32)
-        gaussian_noise_img = np.random.normal(loc=0, scale=90., size=content_img.shape).astype(np.float32)
-        init_img = torch.from_numpy(gaussian_noise_img).float().to(device)
+        if config['noise'] == 'white':
+            white_noise_img = np.random.uniform(-90., 90., content_img.shape).astype(np.float32)
+            init_img = torch.from_numpy(white_noise_img).float().to(device)
+            
+        else:
+            gaussian_noise_img = np.random.normal(loc=0, scale=90., size=content_img.shape).astype(np.float32)
+            init_img = torch.from_numpy(gaussian_noise_img).float().to(device)
+            
     elif config['init_method'] == 'content':
         init_img = content_img
     else:
@@ -99,7 +104,11 @@ def neural_style_transfer(config, placeholder, progress_bar):
             total_loss, content_loss, style_loss, tv_loss = tuning_step(optimizing_img)
             with torch.no_grad():
                 print(f'Adam | iteration: {cnt:03}, total loss={total_loss.item():12.4f}, content_loss={config["content_weight"] * content_loss.item():12.4f}, style loss={config["style_weight"] * style_loss.item():12.4f}, tv loss={config["tv_weight"] * tv_loss.item():12.4f}')
-                utils.save(optimizing_img, dump_path, config, cnt, num_of_iterations[config['optimizer']], progress_bar)
+                current_img = optimizing_img.clone().squeeze(0).cpu().numpy()
+                current_img = utils.to_image_format(current_img)  # Normalize and convert to uint8
+
+                placeholder.image(current_img, caption=f"Iteration {cnt}", use_container_width=True)
+
     elif config['optimizer'] == 'lbfgs':
         # line_search_fn does not seem to have significant impact on result
         optimizer = LBFGS((optimizing_img,), max_iter=num_of_iterations['lbfgs'], line_search_fn='strong_wolfe')
@@ -114,22 +123,12 @@ def neural_style_transfer(config, placeholder, progress_bar):
                 total_loss.backward()
             with torch.no_grad():
                 print(f'L-BFGS | iteration: {cnt:03}, total loss={total_loss.item():12.4f}, content_loss={config["content_weight"] * content_loss.item():12.4f}, style loss={config["style_weight"] * style_loss.item():12.4f}, tv loss={config["tv_weight"] * tv_loss.item():12.4f}')
-                utils.save(optimizing_img, dump_path, config, cnt, num_of_iterations[config['optimizer']], progress_bar)
+                current_img = optimizing_img.clone().squeeze(0).cpu().numpy()
+                current_img = utils.to_image_format(current_img)  # Normalize and convert to uint8
 
+                placeholder.image(current_img, caption=f"Iteration {cnt}", use_container_width=True)
+               
             cnt += 1
             return total_loss
 
         optimizer.step(closure)
-
-    progress_bar.empty()
-    display_styled_image(dump_path, num_of_iterations[config['optimizer']], placeholder)  # Pass video placeholder
-
-
-def display_styled_image(dump_path, num_iterations, placeholder):
-
-    for i in range(num_iterations):
-        img_path = os.path.join(dump_path, f'{str(i).zfill(4)}.jpg')
-        if i % 5 == 0 and os.path.exists(img_path):
-            img = cv.imread(img_path)
-            placeholder.image(img, caption=f"Iteration {i}", use_container_width=True)
-            time.sleep(1)

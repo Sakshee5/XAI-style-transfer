@@ -143,47 +143,41 @@ def total_variation(y):
            torch.sum(torch.abs(y[:, :, :-1, :] - y[:, :, 1:, :]))
 
 
-def display_optimized_image(optimizing_img, loss, iteration, placeholder):
-    caption = f'Iteration: {iteration}, current loss={loss:10.8f}'
-    out_img = optimizing_img.squeeze(0).cpu().detach().numpy()
-    out_img = np.moveaxis(out_img, 0, 2) 
-    out_img += np.array(IMAGENET_MEAN_255).reshape((1, 1, 3))
-    out_img = np.clip(out_img, 0, 255).astype('uint8')
-    placeholder.image(out_img[:, :, ::-1], caption=caption)
+# def display_optimized_image(optimizing_img, loss, iteration, placeholder):
+#     caption = f'Iteration: {iteration}, current loss={loss:10.8f}'
+#     out_img = optimizing_img.squeeze(0).cpu().detach().numpy()
+#     out_img = np.moveaxis(out_img, 0, 2) 
+#     out_img += np.array(IMAGENET_MEAN_255).reshape((1, 1, 3))
+#     out_img = np.clip(out_img, 0, 255).astype('uint8')
+#     placeholder.image(out_img[:, :, ::-1], caption=caption)
 
 
-def save(optimizing_img, dump_path, config, img_id, num_of_iterations, progress_bar):
-    saving_freq = config['saving_freq']
-    out_img = optimizing_img.squeeze(axis=0).to('cpu').detach().numpy()
-    out_img = np.moveaxis(out_img, 0, 2)  
+# def save(optimizing_img, dump_path, config, img_id, num_of_iterations, progress_bar):
+#     saving_freq = config['saving_freq']
+#     out_img = optimizing_img.squeeze(axis=0).to('cpu').detach().numpy()
+#     out_img = np.moveaxis(out_img, 0, 2)  
 
-    if img_id == num_of_iterations-1 or (saving_freq > 0 and img_id % saving_freq == 0):
-        img_format = config['img_format']
-        out_img_name = str(img_id).zfill(img_format[0]) + img_format[1] if saving_freq != -1 else generate_out_img_name(config)
-        dump_img = np.copy(out_img)
-        dump_img += np.array(IMAGENET_MEAN_255).reshape((1, 1, 3))
-        dump_img = np.clip(dump_img, 0, 255).astype('uint8')
-        cv.imwrite(os.path.join(dump_path, out_img_name), dump_img[:, :, ::-1])
-        progress_bar.progress(min((img_id + 1) / num_of_iterations, 1.0))
+#     if img_id == num_of_iterations-1 or (saving_freq > 0 and img_id % saving_freq == 0):
+#         img_format = config['img_format']
+#         out_img_name = str(img_id).zfill(img_format[0]) + img_format[1] if saving_freq != -1 else generate_out_img_name(config)
+#         dump_img = np.copy(out_img)
+#         dump_img += np.array(IMAGENET_MEAN_255).reshape((1, 1, 3))
+#         dump_img = np.clip(dump_img, 0, 255).astype('uint8')
+#         cv.imwrite(os.path.join(dump_path, out_img_name), dump_img[:, :, ::-1])
+#         progress_bar.progress(min((img_id + 1) / num_of_iterations, 1.0))
 
 
 def to_image_format(tensor):
     """
     Converts a PyTorch tensor or NumPy array to a uint8 image format suitable for display.
     Assumes the input tensor/array has values in a non-standard range (e.g., -90 to 90).
-
-    Args:
-        tensor (torch.Tensor or np.ndarray): Input tensor or array to convert.
-
-    Returns:
-        np.ndarray: Image array in uint8 format with shape (H, W, C).
     """
     if isinstance(tensor, torch.Tensor):
         tensor = tensor.detach().cpu().numpy()  # Move to CPU and convert to NumPy array
 
     # Ensure dimensions are correct (e.g., C x H x W to H x W x C)
     if tensor.ndim == 3 and tensor.shape[0] in [1, 3]:  # Channels-first
-        tensor = np.transpose(tensor, (1, 2, 0))  # Convert to H x W x C
+        tensor = np.transpose(tensor, (1, 2, 0)) 
 
     # Normalize to range [0, 255]
     tensor_min, tensor_max = tensor.min(), tensor.max()
