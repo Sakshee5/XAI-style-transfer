@@ -1,14 +1,9 @@
 import streamlit as st
 from reconstruct_image_from_representation import reconstruct_image_from_representation
-import os
 from neural_style_transfer import neural_style_transfer
+from PIL import Image
 
-def set_config(content_img_path=None, style_img_path=None, saving_freq=1, model='vgg19', optimizer='lbfgs', feature_map_index=2, content_weight=1e5, style_weight=3e4, tv_weight=1e0, init_method='content'):
-    # Default directories and configuration setup
-    default_resource_dir = os.path.join(os.path.dirname(__file__), 'data')
-    content_images_dir = os.path.join(default_resource_dir, 'content-images')
-    style_images_dir = os.path.join(default_resource_dir, 'style-images')
-    output_img_dir = os.path.join(default_resource_dir, 'output-images')
+def set_config(content_img=None, style_img=None, saving_freq=1, model='vgg19', optimizer='lbfgs', feature_map_index=2, content_weight=1e5, style_weight=3e4, tv_weight=1e0, init_method='content', noise="white"):
     img_format = (4, '.jpg')
 
     config = {
@@ -16,9 +11,8 @@ def set_config(content_img_path=None, style_img_path=None, saving_freq=1, model=
         "should_visualize_representation": True,
         "height": 250,
         "saving_freq": saving_freq, 
-        "content_images_dir": content_images_dir,
-        "style_images_dir": style_images_dir,
-        "output_img_dir": output_img_dir,
+        "content_img": content_img,
+        "style_img": style_img,
         "img_format": img_format,
         "model": model,
         "optimizer": optimizer,
@@ -27,16 +21,13 @@ def set_config(content_img_path=None, style_img_path=None, saving_freq=1, model=
         "style_weight": style_weight,
         "tv_weight": tv_weight,
         "init_method": init_method,
+        "noise": noise,
     }
-
-    config['content_img_name'] = content_img_path if content_img_path else None
-    config['style_img_name'] = style_img_path if style_img_path else None
-
     return config
 
 
 st.set_page_config(page_title='Neural Style Transfer', layout="wide")
-st.title("Understanding Neural Style Transfer!")
+st.title("Art Meets AI: Demystifying Neural Style Transfer")
 
 with st.sidebar:
     st.header("Navigation")
@@ -50,7 +41,7 @@ with st.sidebar:
                          help="LBFGS is a more precise optimizer but requires more memory. Adam is efficent but takes longer to converge.")
 
 if tab == "Home":
-    with open("how_it_works.md", "r") as f:
+    with open("description.md", "r") as f:
         markdown_text = f.read()
 
     st.write(markdown_text)
@@ -64,24 +55,33 @@ Visualize how the reconstruction process starts with noise and iteratively refin
     content_image = st.file_uploader("Upload Content Image (.png, .jpeg, .jpg)", type=["png", "jpeg", "jpg"], key='content_tab')
 
     if content_image:
+        content_image = Image.open(content_image)
         st.image(content_image, width=250)
-        feature_map_index = st.slider("Feature Map Index", min_value=1, max_value=5, value=1)
-        with st.expander("What is Feature Map Index?"):
-            st.markdown("""
-            The **Feature Map Index** lets you choose which layer's feature representations to visualize:
-            
-            - **Lower indices (e.g., 1, 2):** Display features from early layers, such as edges or textures.
-            - **Higher indices (e.g., 4, 5):** Show features from deeper layers, like shapes or overall structure.
-            
-            This does not change how the reconstruction is performed but highlights the selected layer's output.
-            """)
+        st.markdown("---")
+        col1, col2 = st.columns(2)
 
-    
+        with col1:
+            feature_map_index = st.slider("Feature Map Index", min_value=1, max_value=5, value=1)
+
+        with col2:
+            st.markdown("""Choose which layer's feature representations to visualize. **Lower indices (e.g., 1, 2):** Display features from early layers, such as edges or textures. **Higher indices (e.g., 4, 5):** Show features from deeper layers, like shapes or overall structure. This does not change how the reconstruction is performed but highlights the selected layer's output.""")
+
+        st.markdown("---")
+        col3, col4 = st.columns(2)
+
+        with col3:
+            init_noise = st.selectbox("Choose initial noise type", ['white', 'gaussian'])
+
+        with col4:
+            st.markdown("""Choose the random noise initialization to start reconstruction""")
+        st.markdown("---")
+
+
         start_content_reconstruction = st.button('Start Reconstruction', key='content_reconstruction')
 
     if content_image and start_content_reconstruction:
         st.write("Reconstructing content from noise! Watch the progress below...")
-        config = set_config(content_img_path=content_image.name, style_img_path=None, feature_map_index=feature_map_index)
+        config = set_config(content_img=content_image, style_img=None, feature_map_index=feature_map_index, noise=init_noise)
         
         col1, col2, col3 = st.columns(3)
 
@@ -91,19 +91,13 @@ Visualize how the reconstruction process starts with noise and iteratively refin
         
         with col2:
             st.write("Content Reconstruction Progress")
-            dump_path = os.path.isdir(os.path.join(config['output_img_dir'], ('c' if config['content_img_name'] else 's') + '_reconstruction_' + config['optimizer']))
-            if dump_path:
-                progress_bar = st.empty()
-            else:
-                progress_bar = st.progress(0) 
-                st.write("Watch the reconstruction process once training completes!")
             video_placeholder = st.empty()
 
         with col3:
             st.write("Original Content Image")
             st.image(content_image, use_container_width=True)
 
-        reconstruct_image_from_representation(config, feature_map_placeholder, video_placeholder, progress_bar)
+        reconstruct_image_from_representation(config, feature_map_placeholder, video_placeholder)
 
 elif tab == "Style Reconstruction":
     st.subheader("Style Reconstruction")
@@ -113,13 +107,24 @@ This process insight into how neural networks learn and represent stylistic aspe
     style_image = st.file_uploader("Upload Style Image (.png, .jpeg, .jpg)", type=["png", "jpeg", "jpg"], key='style_tab')
 
     if style_image:
+        style_image = Image.open(style_image)
         st.image(style_image, width=250)
+
+        st.markdown("---")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            init_noise = st.selectbox("Choose initial noise type", ['white', 'gaussian'])
+
+        with col2:
+            st.markdown("""Choose the random noise initialization to start reconstruction""")
+        st.markdown("---")
 
         start_style_reconstruction = st.button('Start Reconstruction', key='style_reconstruction')
 
     if style_image and start_style_reconstruction:
         st.write("Reconstructing style from noise! Watch the progress below...")
-        config = set_config(content_img_path=None, style_img_path=style_image.name)
+        config = set_config(content_img=None, style_img=style_image, noise=init_noise)
         
         col1, col2, col3 = st.columns(3)
 
@@ -129,19 +134,13 @@ This process insight into how neural networks learn and represent stylistic aspe
 
         with col2:
             st.write("Style Reconstruction Progress")
-            dump_path = os.path.isdir(os.path.join(config['output_img_dir'], ('c' if config['content_img_name'] else 's') + '_reconstruction_' + config['optimizer']))
-            if dump_path:
-                progress_bar = st.empty()
-            else:
-                progress_bar = st.progress(0) 
-                st.write("Watch the reconstruction process once training completes!")
             style_video_placeholder = st.empty()
 
         with col3:
             st.write("Original Image")
             st.image(style_image, use_container_width=True)
 
-        reconstruct_image_from_representation(config, gram_matrices_placeholder, style_video_placeholder, progress_bar)
+        reconstruct_image_from_representation(config, gram_matrices_placeholder, style_video_placeholder)
 
 elif tab == "Neural Style Transfer":
     st.subheader("Neural Style Transfer")
@@ -153,6 +152,7 @@ elif tab == "Neural Style Transfer":
         content_image = st.file_uploader("Upload Content Image (.png, .jpeg, .jpg)", type=["png", "jpeg", "jpg"], key='content_tab2')
 
         if content_image:
+            content_image = Image.open(content_image)
             st.image(content_image, width=250)
 
     with col2:
@@ -160,6 +160,7 @@ elif tab == "Neural Style Transfer":
         style_image = st.file_uploader("Upload Style Image (.png, .jpeg, .jpg)", type=["png", "jpeg", "jpg"], key='style_tab2')
 
         if style_image:
+            style_image = Image.open(style_image)
             st.image(style_image, width=250)
 
     if content_image and style_image:
@@ -202,17 +203,29 @@ elif tab == "Neural Style Transfer":
 
         with col8:
             st.markdown("""Determines the starting point for reconstruction:  
-- **Random**: Starts with noise, offering flexibility but slower optimization.  
+- **Random**: Starts with noise, gaussian or white.  
 - **Content**: Starts with the content image for structural fidelity.  
 - **Style**: Starts with the style image for stylistic dominance.""")
         st.markdown('---')
+
+        if init_method == "random":
+            col9, col10 = st.columns(2)
+
+            with col9:
+                init_noise = st.selectbox("Choose initial noise type", ['white', 'gaussian'])
+
+            with col10:
+                st.markdown("""Choose the random noise initialization to start reconstruction""")
+            st.markdown("---")
+        else:
+            init_noise = None
 
 
         start_style_transfer = st.button('Start Style Transfer', key='style_transfer')
 
         if start_style_transfer and content_image and style_image:
             st.write("Transferring style! Watch the progress below...")
-            config = set_config(content_img_path=content_image.name, style_img_path=style_image.name, content_weight=content_weight, style_weight=style_weight, tv_weight=tv_weight, init_method=init_method)
+            config = set_config(content_img=content_image, style_img=style_image, content_weight=content_weight, style_weight=style_weight, tv_weight=tv_weight, init_method=init_method, noise=init_noise)
 
             col1, col2, col3 = st.columns(3)
 
@@ -222,24 +235,13 @@ elif tab == "Neural Style Transfer":
 
             with col2:
                 st.write("Neural Style Transfer Progress")
-                content_img_path = os.path.join(config['content_images_dir'], config['content_img_name'])
-                style_img_path = os.path.join(config['style_images_dir'], config['style_img_name'])
-
-                out_dir_name = 'combined_' + config['optimizer'] + '_cw_' + str(config['content_weight']) + "_sw_" + str(config['style_weight']) + "_tvw_" + str(config['tv_weight']) + "_init_" + config['init_method'] + os.path.split(content_img_path)[1].split('.')[0] + '_' + os.path.split(style_img_path)[1].split('.')[0]
-                dump_path = os.path.join(config['output_img_dir'], out_dir_name)
-                
-                if dump_path:
-                    progress_bar = st.empty()
-                else:
-                    progress_bar = st.progress(0) 
-                    st.write("Watch the style transfer process once training completes!")
                 style_transfer_video_placeholder = st.empty()
 
             with col3:
                 st.write("Style Image")
                 st.image(style_image, use_container_width=True)
 
-            neural_style_transfer(config, style_transfer_video_placeholder, progress_bar)
+            neural_style_transfer(config, style_transfer_video_placeholder)
 
 
 if tab=="Insights":
