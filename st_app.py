@@ -37,7 +37,7 @@ def set_config(content_img_path=None, style_img_path=None, saving_freq=1, model=
 
 
 st.set_page_config(page_title='Neural Style Transfer', layout="wide")
-st.title("Understanding Neural Style Transfer!")
+st.title("Art Meets AI: Demystifying Neural Style Transfer")
 
 with st.sidebar:
     st.header("Navigation")
@@ -209,19 +209,20 @@ elif tab == "Neural Style Transfer":
 
         with col8:
             st.markdown("""Determines the starting point for reconstruction:  
-- **Random**: Starts with noise, offering flexibility but slower optimization.  
+- **Random**: Starts with noise, gaussian or white.  
 - **Content**: Starts with the content image for structural fidelity.  
 - **Style**: Starts with the style image for stylistic dominance.""")
         st.markdown('---')
 
-        col9, col10 = st.columns(2)
+        if init_method == "random":
+            col9, col10 = st.columns(2)
 
-        with col9:
-            init_noise = st.selectbox("Choose initial noise type", ['white', 'gaussian'])
+            with col9:
+                init_noise = st.selectbox("Choose initial noise type", ['white', 'gaussian'])
 
-        with col10:
-            st.markdown("""Choose the random noise initialization to start reconstruction""")
-        st.markdown("---")
+            with col10:
+                st.markdown("""Choose the random noise initialization to start reconstruction""")
+            st.markdown("---")
 
 
         start_style_transfer = st.button('Start Style Transfer', key='style_transfer')
