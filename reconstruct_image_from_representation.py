@@ -7,8 +7,6 @@ import numpy as np
 import streamlit as st
 import time
 import cv2 as cv
-from PIL import Image
-from io import BytesIO
 
 def make_tuning_step(model, optimizer, target_representation, content_feature_maps_index, style_feature_maps_indices, content):
 

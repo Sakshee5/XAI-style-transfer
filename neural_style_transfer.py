@@ -3,11 +3,6 @@ import torch
 from torch.optim import Adam, LBFGS
 from torch.autograd import Variable
 import numpy as np
-import os
-import time
-import cv2 as cv
-from io import BytesIO
-from PIL import Image
 
 
 def build_loss(neural_net, optimizing_img, target_representations, content_feature_maps_index, style_feature_maps_indices, config):
