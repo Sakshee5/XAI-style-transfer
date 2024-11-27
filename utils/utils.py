@@ -72,9 +72,9 @@ def prepare_model(content_feature_map_index, model, device):
     if model == 'vgg16':
         if experimental:
             # much more flexible for experimenting with different style representations
-            model = Vgg16Experimental(requires_grad=False, show_progress=True)
+            model = Vgg16Experimental(content_feature_map_index, requires_grad=False, show_progress=True)
         else:
-            model = Vgg16(requires_grad=False, show_progress=True)
+            model = Vgg16(content_feature_map_index, requires_grad=False, show_progress=True)
     elif model == 'vgg19':
         model = Vgg19(content_feature_map_index, requires_grad=False, show_progress=True)
     else:

@@ -113,7 +113,7 @@ Visualize how the reconstruction process starts with noise and iteratively refin
 
     if content_image and start_content_reconstruction:
         st.subheader("Reconstructing content from noise! Watch the progress below...")
-        config = set_config(content_img=content_image, style_img=None, feature_map_index=feature_map_index, noise=init_noise)
+        config = set_config(content_img=content_image, style_img=None, feature_map_index=feature_map_index, noise=init_noise, model=model, optimizer=optimizer)
         
         col1, col2, col3 = st.columns(3)
 
@@ -187,7 +187,7 @@ This process insight into how neural networks learn and represent stylistic aspe
 
     if style_image and start_style_reconstruction:
         st.subheader("Reconstructing style from noise! Watch the progress below...")
-        config = set_config(content_img=None, style_img=style_image, noise=init_noise)
+        config = set_config(content_img=None, style_img=style_image, noise=init_noise, model=model, optimizer=optimizer)
         
         col1, col2, col3 = st.columns(3)
 
@@ -317,7 +317,7 @@ elif tab == "Neural Style Transfer":
 
         if start_style_transfer and content_image and style_image:
             st.write("Transferring style! Watch the progress below...")
-            config = set_config(content_img=content_image, style_img=style_image, content_weight=content_weight, style_weight=style_weight, tv_weight=tv_weight, init_method=init_method, noise=init_noise)
+            config = set_config(content_img=content_image, style_img=style_image, content_weight=content_weight, style_weight=style_weight, tv_weight=tv_weight, init_method=init_method, noise=init_noise, model=model, optimizer=optimizer)
 
             col1, col2, col3 = st.columns(3)
 
