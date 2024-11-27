@@ -6,9 +6,8 @@ import os
 from PIL import Image
 from models.definitions.vgg_nets import Vgg16, Vgg19, Vgg16Experimental
 
-
-IMAGENET_MEAN_255 = [123.675, 116.28, 103.53]
-IMAGENET_STD_NEUTRAL = [1, 1, 1]
+IMAGENET_MEAN_255=[0.485, 0.456, 0.406]
+IMAGENET_STD_NEUTRAL=[0.229, 0.224, 0.225]
 
 
 def load_image(img_path, target_shape=None):
@@ -46,7 +45,6 @@ def prepare_img_from_pil(image: Image.Image, device: torch.device):
     transform = transforms.Compose([
         transforms.Resize(target_shape),  # Resize to the given shape
         transforms.ToTensor(),
-        transforms.Lambda(lambda x: x.mul(255)),  # Scale to [0, 255]
         transforms.Normalize(mean=IMAGENET_MEAN_255, std=IMAGENET_STD_NEUTRAL)
     ])
     
