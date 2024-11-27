@@ -33,12 +33,13 @@ def set_config(content_img=None,
                style_img=None, 
                model='vgg19', 
                optimizer='lbfgs', 
+               iterations=300,
                feature_map_index=2, 
                content_weight=1e5, 
                style_weight=3e4, 
                tv_weight=1e0, 
                init_method='content', 
-               noise="white"
+               noise="white",
                ):
 
     config = {
@@ -46,6 +47,7 @@ def set_config(content_img=None,
         "style_img": style_img,
         "model": model,
         "optimizer": optimizer,
+        "iterations": iterations,
         "content_feature_map_index": feature_map_index,
         "content_weight":content_weight,
         "style_weight": style_weight,
@@ -113,7 +115,7 @@ Visualize how the reconstruction process starts with noise and iteratively refin
 
     if content_image and start_content_reconstruction:
         st.subheader("Reconstructing content from noise! Watch the progress below...")
-        config = set_config(content_img=content_image, style_img=None, feature_map_index=feature_map_index, noise=init_noise, model=model, optimizer=optimizer)
+        config = set_config(content_img=content_image, style_img=None, feature_map_index=feature_map_index, noise=init_noise, model=model, optimizer=optimizer, iterations=iterations)
         
         col1, col2, col3 = st.columns(3)
 
@@ -150,7 +152,7 @@ Visualize how the reconstruction process starts with noise and iteratively refin
             st.image(st.session_state.feature_maps[feature_map_no], caption=f"Feature Map {feature_map_no}", use_container_width=True)
         
         with col2:
-            content_reconstruct_no = st.slider("Iteration", min_value=1, max_value=len(st.session_state.content_reconstruct)-1, value=1) 
+            content_reconstruct_no = st.slider("Iteration", min_value=1, max_value=iterations, value=1) 
             st.image(st.session_state.content_reconstruct[content_reconstruct_no], caption=f"Iteration {content_reconstruct_no}", use_container_width=True)
 
         with col3:
@@ -187,7 +189,7 @@ This process insight into how neural networks learn and represent stylistic aspe
 
     if style_image and start_style_reconstruction:
         st.subheader("Reconstructing style from noise! Watch the progress below...")
-        config = set_config(content_img=None, style_img=style_image, noise=init_noise, model=model, optimizer=optimizer)
+        config = set_config(content_img=None, style_img=style_image, noise=init_noise, model=model, optimizer=optimizer, iterations=iterations)
         
         col1, col2, col3 = st.columns(3)
 
@@ -224,7 +226,7 @@ This process insight into how neural networks learn and represent stylistic aspe
             st.image(st.session_state.gram_matrices[gram_matrix_no], caption=f"Gram Matrix from layer {gram_matrix_no}", use_container_width=True)
         
         with col2:
-            style_reconstruct_no = st.slider("Iteration", min_value=1, max_value=len(st.session_state.style_reconstruct)-1, value=1) 
+            style_reconstruct_no = st.slider("Iteration", min_value=1, max_value=iterations, value=1) 
             st.image(st.session_state.style_reconstruct[style_reconstruct_no], caption=f"Iteration {style_reconstruct_no}", use_container_width=True)
 
         with col3:
@@ -316,8 +318,8 @@ elif tab == "Neural Style Transfer":
         start_style_transfer = st.button('Start Style Transfer', key='style_transfer')
 
         if start_style_transfer and content_image and style_image:
-            st.write("Transferring style! Watch the progress below...")
-            config = set_config(content_img=content_image, style_img=style_image, content_weight=content_weight, style_weight=style_weight, tv_weight=tv_weight, init_method=init_method, noise=init_noise, model=model, optimizer=optimizer)
+            st.subheader("Transferring style! Watch the progress below...")
+            config = set_config(content_img=content_image, style_img=style_image, content_weight=content_weight, style_weight=style_weight, tv_weight=tv_weight, init_method=init_method, noise=init_noise, model=model, optimizer=optimizer, iterations=iterations)
 
             col1, col2, col3 = st.columns(3)
 
@@ -356,7 +358,7 @@ elif tab == "Neural Style Transfer":
             st.image(content_image, caption="Original Content Image", use_container_width=True)
 
         with col2:
-            style_transfer_no = st.slider("Iteration", min_value=1, max_value=len(st.session_state.style_transfer_progress)-1, value=1) 
+            style_transfer_no = st.slider("Iteration", min_value=1, max_value=iterations, value=1) 
             st.image(st.session_state.style_transfer_progress[style_transfer_no], caption=f"Iteration {style_transfer_no}", use_container_width=True)
 
         with col3:

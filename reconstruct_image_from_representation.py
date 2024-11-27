@@ -50,8 +50,6 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
 
     neural_net, content_feature_maps_index_name, style_feature_maps_indices_names = utils.prepare_model(config['content_feature_map_index'], config['model'], device)
 
-    num_of_iterations = {'adam': 3000, 'lbfgs': 50}
-
     set_of_feature_maps = neural_net(img)
 
     if config['content_img']:
@@ -71,10 +69,10 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
         optimizer = Adam((optimizing_img,))
         tuning_step = make_tuning_step(neural_net, optimizer, target_representation, content_feature_maps_index_name[0], style_feature_maps_indices_names[0], content)
 
-        for it in range(num_of_iterations[config['optimizer']]):
+        for it in range(config['iterations']):
             loss, _ = tuning_step(optimizing_img)
             with torch.no_grad():
-                text_placeholder_2.write(f'Iteration: {it}, loss={loss:10.8f}')
+                text_placeholder_2.write(f'loss={loss:10.8f}')
                 current_img = optimizing_img.clone().squeeze(0).cpu().numpy()
                 current_img = utils.to_image_format(current_img)  # Normalize and convert to uint8
 
@@ -108,7 +106,7 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
 
             # Log the loss and gradients
             with torch.no_grad():
-                text_placeholder_2.write(f'Iteration: {cnt}, loss={loss.item()}')
+                text_placeholder_2.write(f'loss={loss.item()}')
              
                 current_img = optimizing_img.clone().squeeze(0).cpu().numpy()
                 current_img = utils.to_image_format(current_img)  # Normalize and convert to uint8
@@ -122,7 +120,7 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
 
             return loss
 
-        optimizer = LBFGS((optimizing_img,), max_iter=num_of_iterations[config['optimizer']], line_search_fn='strong_wolfe')
+        optimizer = LBFGS((optimizing_img,), max_iter=config['iterations'], line_search_fn='strong_wolfe')
 
         optimizer.step(closure)
 
