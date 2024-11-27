@@ -5,7 +5,7 @@
 - grad cam not implemented for VGG-16
 
 # Issues
-- Content Reconstruction showing NAN loss for non swaure images
+- Content Reconstruction showing NAN loss for non square images
 - Style transfer/reconstruct is very slow.
 - grad cam results seem to be inverted
 - it runs for 10 or so more iterations than defined

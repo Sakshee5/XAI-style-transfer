@@ -4,31 +4,10 @@ import torch
 from torchvision import transforms
 import os
 from PIL import Image
-from models.definitions.vgg_nets import Vgg16, Vgg19, Vgg16Experimental
+from models.definitions.vgg_nets import Vgg16, Vgg19, Vgg19_no_GradCAM
 
 IMAGENET_MEAN_255=[0.485, 0.456, 0.406]
 IMAGENET_STD_NEUTRAL=[0.229, 0.224, 0.225]
-
-
-def load_image(img_path, target_shape=None):
-    if not os.path.exists(img_path):
-        raise Exception(f'Path does not exist: {img_path}')
-    img = cv.imread(img_path)[:, :, ::-1]  # [:, :, ::-1] converts BGR (opencv format...) into RGB
-
-    if target_shape is not None:  # resize section
-        if isinstance(target_shape, int) and target_shape != -1:  # scalar -> implicitly setting the height
-            current_height, current_width = img.shape[:2]
-            new_height = target_shape
-            new_width = int(current_width * (new_height / current_height))
-            img = cv.resize(img, (new_width, new_height), interpolation=cv.INTER_CUBIC)
-        else:  # set both dimensions to target shape
-            img = cv.resize(img, (target_shape[1], target_shape[0]), interpolation=cv.INTER_CUBIC)
-
-    # this need to go after resizing - otherwise cv.resize will push values outside of [0,1] range
-    img = img.astype(np.float32)  # convert from uint8 to float32
-    img /= 255.0  # get to [0, 1] range
-    return img
-
 
 def prepare_img_from_pil(image: Image.Image, device: torch.device):
     """
@@ -64,17 +43,15 @@ def get_uint8_range(x):
         raise ValueError(f'Expected numpy array got {type(x)}')
 
 
-def prepare_model(content_feature_map_index, model, device):
+def prepare_model(content_feature_map_index, model, device, gradCAM):
     # we are not tuning model weights -> we are only tuning optimizing_img's pixels! (that's why requires_grad=False)
-    experimental = False
     if model == 'vgg16':
-        if experimental:
-            # much more flexible for experimenting with different style representations
-            model = Vgg16Experimental(content_feature_map_index, requires_grad=False, show_progress=True)
-        else:
-            model = Vgg16(content_feature_map_index, requires_grad=False, show_progress=True)
+        model = Vgg16(content_feature_map_index, requires_grad=False, show_progress=True)
     elif model == 'vgg19':
-        model = Vgg19(content_feature_map_index, requires_grad=False, show_progress=True)
+        if gradCAM:
+            model = Vgg19(content_feature_map_index, requires_grad=False, show_progress=True)
+        else:
+            model = Vgg19_no_GradCAM(content_feature_map_index, requires_grad=False, show_progress=True)
     else:
         raise ValueError(f'{model} not supported.')
 

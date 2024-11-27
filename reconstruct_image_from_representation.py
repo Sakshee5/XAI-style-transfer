@@ -22,7 +22,7 @@ def make_tuning_step(model, optimizer, target_representation, content_feature_ma
             for gram_gt, gram_hat in zip(target_representation, current_representation):
                 loss += (1 / len(target_representation)) * torch.nn.MSELoss(reduction='sum')(gram_gt[0], gram_hat[0])
 
-        loss.backward(retain_graph=True)
+        loss.backward()
         optimizer.step()
         optimizer.zero_grad()
 
@@ -48,7 +48,7 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
 
     optimizing_img = Variable(init_img, requires_grad=True)
 
-    neural_net, content_feature_maps_index_name, style_feature_maps_indices_names = utils.prepare_model(config['content_feature_map_index'], config['model'], device)
+    neural_net, content_feature_maps_index_name, style_feature_maps_indices_names = utils.prepare_model(config['content_feature_map_index'], config['model'], device, gradCAM=False)
 
     set_of_feature_maps = neural_net(img)
 
@@ -66,7 +66,7 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
     content = True if config['content_img'] else False
 
     if config['optimizer'] == 'adam':
-        optimizer = Adam((optimizing_img,))
+        optimizer = Adam((optimizing_img,), lr=0.1)
         tuning_step = make_tuning_step(neural_net, optimizer, target_representation, content_feature_maps_index_name[0], style_feature_maps_indices_names[0], content)
 
         for it in range(config['iterations']):
@@ -102,7 +102,7 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
                             for gram_gt, gram_hat in zip(target_style_representation, current_style_representation))
 
             # Backward pass
-            loss.backward(retain_graph=True)
+            loss.backward()
 
             # Log the loss and gradients
             with torch.no_grad():
