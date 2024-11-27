@@ -22,7 +22,7 @@ def make_tuning_step(model, optimizer, target_representation, content_feature_ma
             for gram_gt, gram_hat in zip(target_representation, current_representation):
                 loss += (1 / len(target_representation)) * torch.nn.MSELoss(reduction='sum')(gram_gt[0], gram_hat[0])
 
-        loss.backward()
+        loss.backward(retain_graph=True)
         optimizer.step()
         optimizer.zero_grad()
 
@@ -102,7 +102,7 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
                             for gram_gt, gram_hat in zip(target_style_representation, current_style_representation))
 
             # Backward pass
-            loss.backward()
+            loss.backward(retain_graph=True)
 
             # Log the loss and gradients
             with torch.no_grad():
@@ -146,7 +146,8 @@ def display_gram_matrices(gram_matrices, style_feature_maps_indices_names, place
     time.sleep(1)
 
     for i in range(num_of_gram_matrices):
-        gram_matrix = gram_matrices[i].squeeze(axis=0).to('cpu').numpy()
+        gram_matrix = gram_matrices[i].squeeze(axis=0).detach().to('cpu').numpy()
+
         gram_matrix = np.uint8(utils.get_uint8_range(gram_matrix))
         
         placeholder.image(gram_matrix, caption=f'Gram matrix from layer {style_feature_maps_indices_names[1][i]}', use_container_width=True)

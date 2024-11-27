@@ -120,3 +120,19 @@ def to_image_format(tensor):
     tensor = np.clip(tensor, 0, 255).astype(np.uint8)
 
     return tensor
+
+
+def grad_cam(activations, gradients, image_size):
+    # Calculate the weights for each channel (average of the gradients across spatial dimensions)
+    weights = torch.mean(gradients, dim=[0, 2, 3], keepdim=True)
+
+    # Create the Grad-CAM map by multiplying activations with the weights
+    grad_cam_map = torch.sum(weights * activations, dim=1, keepdim=True)
+
+    # Apply ReLU to keep only positive influences
+    grad_cam_map = torch.relu(grad_cam_map)
+
+    # Upsample the Grad-CAM map to the size of the original image
+    grad_cam_map = torch.nn.functional.interpolate(grad_cam_map, size=image_size, mode='bilinear', align_corners=False)
+
+    return grad_cam_map

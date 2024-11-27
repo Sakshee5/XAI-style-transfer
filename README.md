@@ -1,21 +1,14 @@
 # TO-DO
 - Update README
 - Test more and update "Insights" tab
-- look into grad-cam and saliency maps for vgg
 - undertstand and explan gram matrices better. update the home page. are they always square?
+- grad cam not implemented for VGG-16
 
-Visualizations
-● Diffusion Randomized Input Sampling
-Explanation (DF-RISE) 
-● Diffusion Gradient-Weighted Class
-Activation Mapping (DF-CAM)
-● Exponential Time-Step Sampling
-● Relevance Score
-
-DAAM Process
-
-- Better streamlit slider progress bars. they should be updated or vanish!
-- Style transfer/reconstruct is very slow. why
+# Issues
+- Content Reconstruction showing NAN loss for non swaure images
+- Style transfer/reconstruct is very slow.
+- grad cam results seem to be inverted
+- it runs for 10 or so more iterations than defined
 
 ## Implementing Grad-CAM
 In Neural Style Transfer (NST), an image is being optimized to match both the style of a style image and the content of a content image. The network not being used for tasks like classification, but rather to extract content and style features at different layers. Thus, Grad-CAM and Activation Atlases will be applied to the intermediate feature maps that come from these layers during the optimization process.
