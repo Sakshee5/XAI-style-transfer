@@ -13,3 +13,6 @@ Activation Mapping (DF-CAM)
 ● Relevance Score
 
 DAAM Process
+
+- Better streamlit slider progress bars. they should be updated or vanish!
+- Style transfer/reconstruct is very slow. why
