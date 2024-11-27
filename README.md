@@ -2,11 +2,11 @@
 - Update README
 - Test more and update "Insights" tab
 - look into grad-cam and saliency maps for vgg
-- undertstand and explan gram matrices better. update the home page
+- undertstand and explan gram matrices better. update the home page. are they always square?
 
 Visualizations
 ● Diffusion Randomized Input Sampling
-Explanation (DF-RISE)
+Explanation (DF-RISE) 
 ● Diffusion Gradient-Weighted Class
 Activation Mapping (DF-CAM)
 ● Exponential Time-Step Sampling
@@ -16,6 +16,12 @@ DAAM Process
 
 - Better streamlit slider progress bars. they should be updated or vanish!
 - Style transfer/reconstruct is very slow. why
+
+## Implementing Grad-CAM
+In Neural Style Transfer (NST), an image is being optimized to match both the style of a style image and the content of a content image. The network not being used for tasks like classification, but rather to extract content and style features at different layers. Thus, Grad-CAM and Activation Atlases will be applied to the intermediate feature maps that come from these layers during the optimization process.
+
+Grad-CAM helps visualize the areas of the input image that are influencing the loss function at each layer. 
+
 ---------------------------------------------------
 
 # Neural Style Transfer Visualization App
@@ -33,11 +39,13 @@ Neural Style Transfer (NST) is a computer vision technique that allows you to re
 
 ## 🛠 Technical Architecture
 
-### Core Components
+### Core XAI Components
 1. **Streamlit Interface**: `nst_app.py`
    - Provides an interactive, user-friendly web application
-   - Allows real-time parameter manipulation
-   - Visualizes reconstruction and style transfer processes
+   - Allows real-time parameter manipulation. Helps analyze how sensitive the output of the neural network is to different models, optimizers, layers and parameters.
+   - Prints out Style/Content Loss. Monitoring the evolution of losses during the optimization process gives insight into how the image is evolving to meet both objectives.
+   - Decomposition of Style and Content Reconstruction for better understanding of how the model separates content from style. Visualizes feature maps and Gram Matrices to provide insights on the latent space of the neural network.s
+   - Visualizes style transfer processes
 
 2. **Image Processing**:
    - Uses PyTorch for tensor operations
