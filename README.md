@@ -13,23 +13,23 @@ Neural Style Transfer (NST) is a computer vision technique that allows you to re
 
 ### Core XAI Components
 1. **Streamlit Interface**: `nst_app.py`
-- Provides an interactive, user-friendly web application with intuitive parameter controls that allow non-experts to explore neural network behavior.
-- Decomposition of Style and Content Reconstruction for better understanding of how the model separates content from style.
-- Visualizes the entire content reconstruction, style reconstruction and style transfer processes seperately.
-- Comprehensive Insights: Provides context and explanations for technical parameters
+    - Provides an interactive, user-friendly web application with intuitive parameter controls that allow non-experts to explore neural network behavior.
+    - Decomposition of Style and Content Reconstruction for better understanding of how the model separates content from style.
+    - Visualizes the entire content reconstruction, style reconstruction and style transfer processes seperately.
+    - Comprehensive Insights: Provides context and explanations for technical parameters
 
 2. **Transparency through Visualization**
-- Layer-wise Feature Extraction: Shows hierarchical feature learning
-- Feature Map Exploration: Reveals what different neural network layers "see"
-- Gram Matrix Visualization: Explains style representation
-- Iterative Reconstruction: Shows how neural networks progressively understand and reconstruct images
-- Grad-CAM Visualizations: Highlights which image regions most influence style and content transfer
-- Comparative Visualization: Side-by-side comparisons of original and reconstructed images
+    - Layer-wise Feature Extraction: Shows hierarchical feature learning
+    - Feature Map Exploration: Reveals what different neural network layers "see"
+    - Gram Matrix Visualization: Explains style representation
+    - Iterative Reconstruction: Shows how neural networks progressively understand and reconstruct images
+    - Grad-CAM Visualizations: Highlights which image regions most influence style and content transfer
+    - Comparative Visualization: Side-by-side comparisons of original and reconstructed images
 
 3. **Interaction-Driven Interpretability**
-- Interactive Parameters: Users can modify parameters and observe real-time effects
-- Optimization Process Transparency: Tracks losses during the optimization process gives insight into how the image is evolving to meet objective of minimizing relevant loss function.
-- Progress Bars: To track the reconstruction/style transfer process after training.
+    - Interactive Parameters: Users can modify parameters and observe real-time effects
+    - Optimization Process Transparency: Tracks losses during the optimization process gives insight into how the image is evolving to meet objective of minimizing relevant loss function.
+    - Progress Bars: To track the reconstruction/style transfer process after training.
 
 
 ## 🔧 Installation
