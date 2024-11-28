@@ -135,13 +135,6 @@ Visualize how the reconstruction process starts with noise and iteratively refin
 
         reconstruct_image_from_representation(config, feature_map_placeholder, video_placeholder, text_placeholder_1, text_placeholder_2)
         st.session_state.content_reconstruct_complete = True
-        feature_map_placeholder.empty()
-        video_placeholder.empty()
-        text_placeholder_1.empty()
-        text_placeholder_2.empty()
-        col1.empty()
-        col2.empty()
-        col3.empty()
 
     if st.session_state.content_reconstruct_complete:
         st.markdown("---")
@@ -209,13 +202,6 @@ This process insight into how neural networks learn and represent stylistic aspe
 
         reconstruct_image_from_representation(config, gram_matrices_placeholder, style_video_placeholder, text_placeholder_3, text_placeholder_4)
         st.session_state.style_reconstruct_complete = True
-        gram_matrices_placeholder.empty()
-        style_video_placeholder.empty()
-        text_placeholder_3.empty()
-        text_placeholder_4.empty()
-        col1.empty()
-        col2.empty()
-        col3.empty()
 
     if st.session_state.style_reconstruct_complete:
         st.markdown("---")
@@ -338,11 +324,6 @@ elif tab == "Neural Style Transfer":
 
             neural_style_transfer(config, style_transfer_video_placeholder, text_placeholder_5)
             st.session_state.style_transfer_complete = True
-            style_transfer_video_placeholder.empty()
-            text_placeholder_5.empty()
-            col1.empty()
-            col2.empty()
-            col3.empty()
 
     if st.session_state.style_transfer_complete:
         st.markdown("---")

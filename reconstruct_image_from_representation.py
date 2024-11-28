@@ -30,7 +30,7 @@ def make_tuning_step(model, optimizer, target_representation, content_feature_ma
 
     return tuning_step
 
-def reconstruct_image_from_representation(config, representation_placeholder, video_placeholder, text_placeholder_1=None, text_placeholder_2=None):
+def reconstruct_image_from_representation(config, representation_placeholder, video_placeholder, text_placeholder_1, text_placeholder_2):
     
     uploaded_image = config['content_img'] if config['content_img'] else config['style_img']
 
