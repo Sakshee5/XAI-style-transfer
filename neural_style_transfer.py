@@ -43,7 +43,7 @@ def make_tuning_step(neural_net, optimizer, target_representations, content_feat
     return tuning_step
 
 
-def neural_style_transfer(config, placeholder, text_placeholder):
+def neural_style_transfer(config, placeholder, text_placeholder, grad_cam_content_placeholder, grad_cam_style_placeholder):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     content_img = utils.prepare_img_from_pil(config["content_img"], device) 
