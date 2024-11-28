@@ -2,11 +2,11 @@ Neural Style Transfer lets us blend two images: one that provides the **content*
 
 ---
 
-## 1. What Are Feature Maps? (The Core of Content)
+## Key Concept: What is a feature map? (The core of "Content")
 
-When a neural network processes an image, it doesn't see pixels; it learns to recognize patterns. These patterns are stored in **feature maps**, which capture:
-- **Early layers**: Simple patterns like edges or textures.
-- **Deeper layers**: Complex patterns like shapes and objects.
+Think of an image as a set of patterns (edges, textures, shapes). When you pass an image through a neural network (like a convolutional neural network, or CNN), it learns to detect these patterns. These patterns are captured as feature maps at each layer.
+
+Feature maps are like "snapshots" of how a certain pattern (e.g., horizontal lines, blobs, etc.) shows up across different parts of the image.
 
 ### **Content Loss (Formula and Intuition)**
 
@@ -25,17 +25,18 @@ F_(ij) : Feature map values at layer (j) and filter (i)
 
 ---
 
-## 2. What Are Gram Matrices? (The Core of Style)
+## 2. What Are Gram Matrices? (The Core of "Style")
 
-Style is about **relationships between patterns**, not individual features. For example, in a painting, brush strokes may repeat in waves, swirls, or loops.
+Imagine you want to recreate the "feel" or "style" of a painting; things like the brushstroke patterns, textures, and overall "vibe." This doesn't mean copying the objects in the painting (like a tree or a house), but rather capturing how those objects are painted (smooth, rough, repetitive patterns, etc.).
 
-### **Gram Matrix (Intuition)**
-
-A **Gram matrix** captures how features interact:
-- It measures how strongly two patterns (e.g., swirls and loops) occur together.
-- Each cell in the Gram matrix represents the relationship between two features.
+Gram matrices help us measure and preserve the texture and style of an image by capturing relationships between features in different parts of the image. It summarizes the relationships between the patterns in a feature map. Specifically, it measures how strongly two patterns (features) are activated together across the image.
 
 ### **Style Loss (Formula and Intuition)**
+
+- Suppose the neural network outputs a feature map F (C x H x W) for an image.
+- Reshape F into a 2D matrix F of size (C, H x W) where each row is a pattern (feature) and each column represents how that pattern appears across all spatial locations.
+- The Gram matrix G is simply: F x F(Transpose)
+where G[i,j] captures the relationship (dot product) between feature i and feature j.
 
 To match the style, we calculate the Gram matrices for both the style image and the generated image. The goal is to make them similar.
 

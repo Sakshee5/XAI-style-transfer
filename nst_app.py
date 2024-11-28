@@ -69,7 +69,7 @@ st.title("Art Meets AI: Demystifying Neural Style Transfer")
 
 with st.sidebar:
     st.header("Navigation")
-    tab = st.radio("Choose a tab:", ["Home", "Content Reconstruction", "Style Reconstruction", "Neural Style Transfer", "Insights"])
+    tab = st.radio("Choose a tab:", ["Home", "Content Reconstruction", "Style Reconstruction", "Neural Style Transfer"])
 
     st.header("User Inputs")
 
@@ -373,11 +373,3 @@ elif tab == "Neural Style Transfer":
         with col3:
             st.image(style_image.resize(content_image.size), caption="Original Style Image", use_container_width=True)
             st.image(st.session_state.grad_cam_style[style_transfer_no], caption=f"Iteration {style_transfer_no}", use_container_width=True)
-
-
-
-if tab=="Insights":
-    with open("docs/insights.md", "r") as f:
-        markdown_text = f.read()
-
-    st.markdown(markdown_text)
