@@ -1,6 +1,6 @@
 # Art Meets AI: An XAI-Driven Visual Exploration of Neural Style Transfer
 
-## 📝 Project Overview
+## Project Overview
 
 ### What is Neural Style Transfer?
 Neural Style Transfer (NST) is a computer vision technique that allows you to reimagine images by blending the content of one image with the artistic style of another. Imagine taking a photograph and rendering it in the style of a Van Gogh painting or a Picasso cubist composition!
@@ -32,7 +32,7 @@ Neural Style Transfer (NST) is a computer vision technique that allows you to re
     - Progress Bars: To track the reconstruction/style transfer process after training.
 
 
-## 🔧 Installation
+## Installation
 
 ### Prerequisites
 - Python 3.8+
@@ -61,3 +61,9 @@ streamlit run nst_app.py
 - Upload content and style images (as required)
 - Adjust parameters like model, optimizer, iterations and tab specific parameters
 - Explore the visual transformations step-by-step
+
+## References
+
+- https://github.com/pytorch/examples/tree/main/fast_neural_style
+- https://github.com/gordicaleksa/pytorch-neural-style-transfer
+- https://www.youtube.com/watch?v=S78LQebx6jo&list=PLBoQnSflObcmbfshq9oNs41vODgXG-608
