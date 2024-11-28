@@ -2,8 +2,9 @@
 - Test more and update "Insights" tab
 - undertstand and explan gram matrices better. update the home page. are they always square?
 
-# Minor Issues
+# Issues
 - Style transfer/reconstruct is very slow.
 - it runs for 10 or so more iterations than defined
 - grad cam not implemented for VGG-16
-- grad cam seperate for content and style
+- grad cam seperate for content and style but results dont seem logical
+- grad cam not working for lbfgs
