@@ -16,7 +16,7 @@ Neural Style Transfer (NST) is a computer vision technique that allows you to re
     - Provides an interactive, user-friendly web application with intuitive parameter controls that allow non-experts to explore neural network behavior.
     - Decomposition of Style and Content Reconstruction for better understanding of how the model separates content from style.
     - Visualizes the entire content reconstruction, style reconstruction and style transfer processes seperately.
-    - Comprehensive Insights: Provides context and explanations for technical parameters
+    - Provides context and explanations for technical parameters
 
 2. **Transparency through Visualization**
     - Layer-wise Feature Extraction: Shows hierarchical feature learning
