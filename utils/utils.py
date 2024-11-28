@@ -4,31 +4,11 @@ import torch
 from torchvision import transforms
 import os
 from PIL import Image
-from models.definitions.vgg_nets import Vgg16, Vgg19, Vgg16Experimental
+from models.definitions.vgg_nets import Vgg16, Vgg19, Vgg16Experimental, Vgg19_GradCAM
 
 
 IMAGENET_MEAN_255 = [123.675, 116.28, 103.53]
 IMAGENET_STD_NEUTRAL = [1, 1, 1]
-
-
-def load_image(img_path, target_shape=None):
-    if not os.path.exists(img_path):
-        raise Exception(f'Path does not exist: {img_path}')
-    img = cv.imread(img_path)[:, :, ::-1]  # [:, :, ::-1] converts BGR (opencv format...) into RGB
-
-    if target_shape is not None:  # resize section
-        if isinstance(target_shape, int) and target_shape != -1:  # scalar -> implicitly setting the height
-            current_height, current_width = img.shape[:2]
-            new_height = target_shape
-            new_width = int(current_width * (new_height / current_height))
-            img = cv.resize(img, (new_width, new_height), interpolation=cv.INTER_CUBIC)
-        else:  # set both dimensions to target shape
-            img = cv.resize(img, (target_shape[1], target_shape[0]), interpolation=cv.INTER_CUBIC)
-
-    # this need to go after resizing - otherwise cv.resize will push values outside of [0,1] range
-    img = img.astype(np.float32)  # convert from uint8 to float32
-    img /= 255.0  # get to [0, 1] range
-    return img
 
 
 def prepare_img_from_pil(image: Image.Image, device: torch.device):
@@ -66,17 +46,15 @@ def get_uint8_range(x):
         raise ValueError(f'Expected numpy array got {type(x)}')
 
 
-def prepare_model(content_feature_map_index, model, device):
+def prepare_model(content_feature_map_index, model, device, gradCAM=False):
     # we are not tuning model weights -> we are only tuning optimizing_img's pixels! (that's why requires_grad=False)
-    experimental = False
     if model == 'vgg16':
-        if experimental:
-            # much more flexible for experimenting with different style representations
-            model = Vgg16Experimental(requires_grad=False, show_progress=True)
-        else:
-            model = Vgg16(requires_grad=False, show_progress=True)
+        model = Vgg16(requires_grad=False, show_progress=True)
     elif model == 'vgg19':
-        model = Vgg19(content_feature_map_index, requires_grad=False, show_progress=True)
+        if gradCAM:
+            model = Vgg19_GradCAM(content_feature_map_index, requires_grad=False, show_progress=True)
+        else:
+            model = Vgg19(content_feature_map_index, requires_grad=False, show_progress=True)
     else:
         raise ValueError(f'{model} not supported.')
 
@@ -122,3 +100,19 @@ def to_image_format(tensor):
     tensor = np.clip(tensor, 0, 255).astype(np.uint8)
 
     return tensor
+
+
+def grad_cam(activations, gradients, image_size):
+    # Calculate the weights for each channel (average of the gradients across spatial dimensions)
+    weights = torch.mean(gradients, dim=[0, 2, 3], keepdim=True)
+
+    # Create the Grad-CAM map by multiplying activations with the weights
+    grad_cam_map = torch.sum(weights * activations, dim=1, keepdim=True)
+
+    # Apply ReLU to keep only positive influences
+    grad_cam_map = torch.relu(grad_cam_map)
+
+    # Upsample the Grad-CAM map to the size of the original image
+    grad_cam_map = torch.nn.functional.interpolate(grad_cam_map, size=image_size, mode='bilinear', align_corners=False)
+
+    return grad_cam_map
