@@ -4,7 +4,7 @@ import torch
 from torchvision import transforms
 import os
 from PIL import Image
-from models.definitions.vgg_nets import Vgg16, Vgg19, Vgg16Experimental, Vgg19_GradCAM
+from models.definitions.vgg_nets import Vgg16, Vgg19, Vgg16_GradCAM, Vgg19_GradCAM
 
 
 IMAGENET_MEAN_255 = [123.675, 116.28, 103.53]
@@ -49,7 +49,10 @@ def get_uint8_range(x):
 def prepare_model(content_feature_map_index, model, device, gradCAM=False):
     # we are not tuning model weights -> we are only tuning optimizing_img's pixels! (that's why requires_grad=False)
     if model == 'vgg16':
-        model = Vgg16(requires_grad=False, show_progress=True)
+        if gradCAM:
+            model = Vgg16_GradCAM(content_feature_map_index, requires_grad=False, show_progress=True)
+        else:
+            model = Vgg16(content_feature_map_index, requires_grad=False, show_progress=True)
     elif model == 'vgg19':
         if gradCAM:
             model = Vgg19_GradCAM(content_feature_map_index, requires_grad=False, show_progress=True)

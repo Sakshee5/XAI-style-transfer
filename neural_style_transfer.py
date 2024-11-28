@@ -69,8 +69,7 @@ def neural_style_transfer(config, placeholder, text_placeholder, grad_cam_conten
     optimizing_img = Variable(init_img, requires_grad=True)
 
     neural_net, content_feature_maps_index_name, style_feature_maps_indices_names = utils.prepare_model(config['content_feature_map_index'], config['model'], device, gradCAM=True)
-    print(f'Using {config["model"]} in the optimization procedure.')
-
+  
     content_img_set_of_feature_maps = neural_net(content_img)
     style_img_set_of_feature_maps = neural_net(style_img)
 
@@ -84,33 +83,19 @@ def neural_style_transfer(config, placeholder, text_placeholder, grad_cam_conten
         for cnt in range(config['iterations']):
             total_loss, content_loss, style_loss, tv_loss = tuning_step(optimizing_img)
 
-            # Perform backward pass to populate gradients
-            total_loss.backward(retain_graph=True)
-            # Extract activations and gradients for Grad-CAM
-            activations = neural_net(optimizing_img).conv4_2  # Access the activations for 'conv4_2'
-            gradients = neural_net.gradients  # Get the gradients from the hook
+            if config["model"]=='vgg19':
+                # Extract activations and gradients for Grad-CAM
+                activations_content = neural_net(optimizing_img).conv4_2  # Access the activations for 'conv4_2'
+                gradients_content = neural_net.content_gradients  # Get the gradients from the hook
 
-            # # Perform backward pass to populate gradients
-            # content_loss.backward(retain_graph=True)
-            # # Extract activations and gradients for Grad-CAM
-            # activations = neural_net(optimizing_img).conv4_2  # Access the activations for 'conv4_2'
-            # gradients = neural_net.gradients  # Get the gradients from the hook
+                activations_style = neural_net(optimizing_img).relu3_1  # Access the activations for 'conv4_2'
+                gradients_style = neural_net.style_gradients  # Get the gradients from the hook
 
-            # # Get Grad-CAM map
-            # grad_cam_map_content = utils.grad_cam(activations, gradients, optimizing_img.shape[2:])  # Pass image size as (height, width)
 
-            # # Perform backward pass to populate gradients
-            # style_loss.backward(retain_graph=True)
-            # # Extract activations and gradients for Grad-CAM
-            # activations = neural_net(optimizing_img).conv4_2  # Access the activations for 'conv4_2'
-            # gradients = neural_net.gradients  # Get the gradients from the hook
-            # # Get Grad-CAM map
-            # grad_cam_map_style = utils.grad_cam(activations, gradients, optimizing_img.shape[2:])  # Pass image size as (height, width)
-        
-            
             # Get Grad-CAM map
-            grad_cam_map = utils.grad_cam(activations, gradients, optimizing_img.shape[2:])  # Pass image size as (height, width)
-        
+            grad_cam_map_content = utils.grad_cam(activations_content, gradients_content, optimizing_img.shape[2:])  # Pass image size as (height, width)
+            grad_cam_map_style = utils.grad_cam(activations_style, gradients_style, optimizing_img.shape[2:])  # Pass image size as (height, width)
+
             with torch.no_grad():
                 text = f"""total loss={total_loss.item():12.4f}\ncontent_loss={config["content_weight"] * content_loss.item():12.4f}\nstyle loss={config["style_weight"] * style_loss.item():12.4f}\ntv loss={config["tv_weight"] * tv_loss.item():12.4f}"""
                 text_placeholder.text(text)
@@ -121,11 +106,11 @@ def neural_style_transfer(config, placeholder, text_placeholder, grad_cam_conten
                 st.session_state.style_transfer_progress.append(current_img)
 
                 # Visualize Grad-CAM
-                grad_cam_content_image = visualize_grad_cam(grad_cam_map, content_img)
+                grad_cam_content_image = visualize_grad_cam(grad_cam_map_content, content_img)
                 grad_cam_content_placeholder.image(grad_cam_content_image, caption="Grad-CAM", use_container_width=True)
                 st.session_state.grad_cam_content.append(grad_cam_content_image)
 
-                grad_cam_style_image = visualize_grad_cam(grad_cam_map, style_img)
+                grad_cam_style_image = visualize_grad_cam(grad_cam_map_style, style_img)
                 grad_cam_style_placeholder.image(grad_cam_style_image, caption="Grad-CAM", use_container_width=True)
                 st.session_state.grad_cam_style.append(grad_cam_style_image)
 
@@ -204,3 +189,22 @@ def visualize_grad_cam(grad_cam_map, original_image):
     grad_cam_image = cv2.addWeighted(original_image.astype(np.uint8), 0.5, grad_cam_map_colored, 0.5, 0)
 
     return grad_cam_image
+
+    # # Perform backward pass to populate gradients
+            # content_loss.backward(retain_graph=True)
+            # # Extract activations and gradients for Grad-CAM
+            # activations = neural_net(optimizing_img).conv4_2  # Access the activations for 'conv4_2'
+            # gradients = neural_net.gradients  # Get the gradients from the hook
+
+            # # Get Grad-CAM map
+            # grad_cam_map_content = utils.grad_cam(activations, gradients, optimizing_img.shape[2:])  # Pass image size as (height, width)
+
+            # # Perform backward pass to populate gradients
+            # style_loss.backward(retain_graph=True)
+            # # Extract activations and gradients for Grad-CAM
+            # activations = neural_net(optimizing_img).conv4_2  # Access the activations for 'conv4_2'
+            # gradients = neural_net.gradients  # Get the gradients from the hook
+            # # Get Grad-CAM map
+            # grad_cam_map_style = utils.grad_cam(activations, gradients, optimizing_img.shape[2:])  # Pass image size as (height, width)
+        
+            
