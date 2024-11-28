@@ -3,6 +3,7 @@ import torch
 from torch.optim import Adam, LBFGS
 from torch.autograd import Variable
 import numpy as np
+import streamlit as st
 
 
 def build_loss(neural_net, optimizing_img, target_representations, content_feature_maps_index, style_feature_maps_indices, config):
@@ -42,7 +43,7 @@ def make_tuning_step(neural_net, optimizer, target_representations, content_feat
     return tuning_step
 
 
-def neural_style_transfer(config, placeholder):
+def neural_style_transfer(config, placeholder, text_placeholder):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     content_img = utils.prepare_img_from_pil(config["content_img"], device) 
@@ -78,25 +79,22 @@ def neural_style_transfer(config, placeholder):
     target_style_representation = [utils.gram_matrix(x) for cnt, x in enumerate(style_img_set_of_feature_maps) if cnt in style_feature_maps_indices_names[0]]
     target_representations = [target_content_representation, target_style_representation]
 
-    num_of_iterations = {
-        "lbfgs": 500,
-        "adam": 3000,
-    }
-
     if config['optimizer'] == 'adam':
         optimizer = Adam((optimizing_img,), lr=1e1)
         tuning_step = make_tuning_step(neural_net, optimizer, target_representations, content_feature_maps_index_name[0], style_feature_maps_indices_names[0], config)
-        for cnt in range(num_of_iterations[config['optimizer']]):
+        for cnt in range(config['iterations']):
             total_loss, content_loss, style_loss, tv_loss = tuning_step(optimizing_img)
             with torch.no_grad():
-                print(f'Adam | iteration: {cnt:03}, total loss={total_loss.item():12.4f}, content_loss={config["content_weight"] * content_loss.item():12.4f}, style loss={config["style_weight"] * style_loss.item():12.4f}, tv loss={config["tv_weight"] * tv_loss.item():12.4f}')
+                text = f"""total loss={total_loss.item():12.4f}\ncontent_loss={config["content_weight"] * content_loss.item():12.4f}\nstyle loss={config["style_weight"] * style_loss.item():12.4f}\ntv loss={config["tv_weight"] * tv_loss.item():12.4f}"""
+                text_placeholder.text(text)
                 current_img = optimizing_img.clone().squeeze(0).cpu().numpy()
                 current_img = utils.to_image_format(current_img)  # Normalize and convert to uint8
 
                 placeholder.image(current_img, caption=f"Iteration {cnt}", use_container_width=True)
+                st.session_state.style_transfer_progress.append(current_img)
 
     elif config['optimizer'] == 'lbfgs':
-        optimizer = LBFGS((optimizing_img,), max_iter=num_of_iterations['lbfgs'], line_search_fn='strong_wolfe')
+        optimizer = LBFGS((optimizing_img,), max_iter=config['iterations'], line_search_fn='strong_wolfe')
         cnt = 0
 
         def closure():
@@ -107,11 +105,13 @@ def neural_style_transfer(config, placeholder):
             if total_loss.requires_grad:
                 total_loss.backward()
             with torch.no_grad():
-                print(f'L-BFGS | iteration: {cnt:03}, total loss={total_loss.item():12.4f}, content_loss={config["content_weight"] * content_loss.item():12.4f}, style loss={config["style_weight"] * style_loss.item():12.4f}, tv loss={config["tv_weight"] * tv_loss.item():12.4f}')
+                text = f"""total loss={total_loss.item():12.4f}\ncontent_loss={config["content_weight"] * content_loss.item():12.4f}\nstyle loss={config["style_weight"] * style_loss.item():12.4f}\ntv loss={config["tv_weight"] * tv_loss.item():12.4f}"""
+                text_placeholder.text(text)
                 current_img = optimizing_img.clone().squeeze(0).cpu().numpy()
                 current_img = utils.to_image_format(current_img)  # Normalize and convert to uint8
 
                 placeholder.image(current_img, caption=f"Iteration {cnt}", use_container_width=True)
+                st.session_state.style_transfer_progress.append(current_img)
                
             cnt += 1
             return total_loss
