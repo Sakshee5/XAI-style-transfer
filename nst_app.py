@@ -20,6 +20,12 @@ if "style_reconstruct" not in st.session_state:
 if "style_transfer_progress" not in st.session_state:
     st.session_state['style_transfer_progress'] = []
 
+if "grad_cam_content" not in st.session_state:
+    st.session_state['grad_cam_content'] = []
+
+if "grad_cam_style" not in st.session_state:
+    st.session_state['grad_cam_style'] = []
+
 if "content_reconstruct_complete" not in st.session_state:
     st.session_state['content_reconstruct_complete'] = False
 
@@ -47,7 +53,7 @@ def set_config(content_img=None,
         "style_img": style_img,
         "model": model,
         "optimizer": optimizer,
-        "iterations": iterations,
+        "iterations": iterations-7,
         "content_feature_map_index": feature_map_index,
         "content_weight":content_weight,
         "style_weight": style_weight,
@@ -114,6 +120,12 @@ Visualize how the reconstruction process starts with noise and iteratively refin
         start_content_reconstruction = st.button('Start Reconstruction', key='content_reconstruction')
 
     if content_image and start_content_reconstruction:
+        st.session_state['feature_maps'] = []
+        st.session_state['content_reconstruct'] = []
+        st.session_state['gram_matrices'] = []
+        st.session_state['style_reconstruct'] = []
+        st.session_state['style_transfer_progress'] = []
+
         st.subheader("Reconstructing content from noise! Watch the progress below...")
         config = set_config(content_img=content_image, style_img=None, feature_map_index=feature_map_index, noise=init_noise, model=model, optimizer=optimizer, iterations=iterations)
         
@@ -142,7 +154,9 @@ Visualize how the reconstruction process starts with noise and iteratively refin
         col1, col2, col3 = st.columns(3)
         with col1:
             feature_map_no = st.slider("Feature Map", min_value=0, max_value=len(st.session_state.feature_maps)-1, value=0) 
-            st.image(st.session_state.feature_maps[feature_map_no], caption=f"Feature Map {feature_map_no}", use_container_width=True)
+            feature_map = st.session_state.feature_maps[feature_map_no].to('cpu').numpy()
+            feature_map = np.uint8(utils.get_uint8_range(feature_map))
+            st.image(feature_map, caption=f"Feature Map {feature_map_no}", use_container_width=True)
         
         with col2:
             content_reconstruct_no = st.slider("Iteration", min_value=1, max_value=iterations, value=1) 
@@ -181,6 +195,12 @@ This process insight into how neural networks learn and represent stylistic aspe
         start_style_reconstruction = st.button('Start Reconstruction', key='style_reconstruction')
 
     if style_image and start_style_reconstruction:
+        st.session_state['feature_maps'] = []
+        st.session_state['content_reconstruct'] = []
+        st.session_state['gram_matrices'] = []
+        st.session_state['style_reconstruct'] = []
+        st.session_state['style_transfer_progress'] = []
+
         st.subheader("Reconstructing style from noise! Watch the progress below...")
         config = set_config(content_img=None, style_img=style_image, noise=init_noise, model=model, optimizer=optimizer, iterations=iterations)
         
@@ -312,6 +332,7 @@ elif tab == "Neural Style Transfer":
             with col1:
                 st.write("Content Image")
                 st.image(content_image, use_container_width=True)
+                grad_cam_content_placeholder = st.empty()
 
             with col2:
                 st.write("Neural Style Transfer Progress")
@@ -320,36 +341,39 @@ elif tab == "Neural Style Transfer":
 
             with col3:
                 st.write("Style Image")
-                st.image(style_image, use_container_width=True)
+                st.image(style_image.resize(content_image.size), use_container_width=True)
+                grad_cam_style_placeholder = st.empty()
 
-            neural_style_transfer(config, style_transfer_video_placeholder, text_placeholder_5)
+            neural_style_transfer(config, style_transfer_video_placeholder, text_placeholder_5, grad_cam_content_placeholder, grad_cam_style_placeholder)
             st.session_state.style_transfer_complete = True
 
     if st.session_state.style_transfer_complete:
         st.markdown("---")
         st.subheader("Use the slider to explore the style transfer progress..")
         col1, col2, col3 = st.columns(3)
-        with col1:
-            st.write('')
-            st.write('')
-            st.write('')
-            st.write('')
-            st.write('')
-            st.write('')
-            st.image(content_image, caption="Original Content Image", use_container_width=True)
-
         with col2:
+            st.text("")
+            st.text("")
+            st.text("")
+            st.text("")
+            st.text("")
             style_transfer_no = st.slider("Iteration", min_value=1, max_value=iterations, value=1) 
+            st.text("")
+            st.text("")
+            st.text("")
+            st.text("")
+            st.text("")
             st.image(st.session_state.style_transfer_progress[style_transfer_no], caption=f"Iteration {style_transfer_no}", use_container_width=True)
+            
 
+        with col1:
+            st.image(content_image, caption="Original Content Image", use_container_width=True)
+            st.image(st.session_state.grad_cam_content[style_transfer_no], caption=f"Iteration {style_transfer_no}", use_container_width=True)
+        
         with col3:
-            st.write('')
-            st.write('')
-            st.write('')
-            st.write('')
-            st.write('')
-            st.write('')
-            st.image(style_image, caption="Original Style Image", use_container_width=True)
+            st.image(style_image.resize(content_image.size), caption="Original Style Image", use_container_width=True)
+            st.image(st.session_state.grad_cam_style[style_transfer_no], caption=f"Iteration {style_transfer_no}", use_container_width=True)
+
 
 
 if tab=="Insights":

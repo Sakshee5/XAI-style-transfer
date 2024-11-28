@@ -3,8 +3,8 @@ import torch
 from torch.autograd import Variable
 from torch.optim import Adam, LBFGS
 import numpy as np
-import streamlit as st
 import time
+import streamlit as st
 
 def make_tuning_step(model, optimizer, target_representation, content_feature_maps_index, style_feature_maps_indices, content):
 
@@ -113,6 +113,7 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
                     st.session_state.content_reconstruct.append(current_img)
                 else:
                     st.session_state.style_reconstruct.append(current_img)
+            
                 cnt += 1
 
             return loss
@@ -125,6 +126,7 @@ def display_feature_maps(feature_maps, placeholder, text_placeholder_1):
     num_of_feature_maps = feature_maps.size()[0]
     text_placeholder_1.write(f'Number of feature maps: {num_of_feature_maps}')
     time.sleep(1)
+    st.session_state.feature_maps = feature_maps
 
     for i in range(len(feature_maps)):
         feature_map = feature_maps[i].to('cpu').numpy()
@@ -134,8 +136,6 @@ def display_feature_maps(feature_maps, placeholder, text_placeholder_1):
             placeholder.image(feature_map, caption=f"Feature Map {i}", use_container_width=True)
             time.sleep(1)
 
-        st.session_state.feature_maps.append(feature_map)
-        
 
 def display_gram_matrices(gram_matrices, style_feature_maps_indices_names, placeholder, text_placeholder):
     num_of_gram_matrices = len(gram_matrices)
