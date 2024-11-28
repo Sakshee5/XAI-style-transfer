@@ -33,9 +33,7 @@ def make_tuning_step(model, optimizer, target_representation, content_feature_ma
 def reconstruct_image_from_representation(config, representation_placeholder, video_placeholder, text_placeholder_1, text_placeholder_2):
     
     uploaded_image = config['content_img'] if config['content_img'] else config['style_img']
-
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
     img = utils.prepare_img_from_pil(uploaded_image, device) 
     
     if config['noise'] == 'white':
@@ -49,7 +47,6 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
     optimizing_img = Variable(init_img, requires_grad=True)
 
     neural_net, content_feature_maps_index_name, style_feature_maps_indices_names = utils.prepare_model(config['content_feature_map_index'], config['model'], device)
-
     set_of_feature_maps = neural_net(img)
 
     if config['content_img']:
