@@ -33,7 +33,9 @@ def make_tuning_step(model, optimizer, target_representation, content_feature_ma
 def reconstruct_image_from_representation(config, representation_placeholder, video_placeholder, text_placeholder_1, text_placeholder_2):
     
     uploaded_image = config['content_img'] if config['content_img'] else config['style_img']
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
     img = utils.prepare_img_from_pil(uploaded_image, device) 
     
     if config['noise'] == 'white':
@@ -128,13 +130,11 @@ def display_feature_maps(feature_maps, placeholder, text_placeholder_1):
     time.sleep(1)
     st.session_state.feature_maps = feature_maps
 
-    for i in range(len(feature_maps)):
+    for i in range(5):
         feature_map = feature_maps[i].to('cpu').numpy()
         feature_map = np.uint8(utils.get_uint8_range(feature_map))
-
-        if i<5:
-            placeholder.image(feature_map, caption=f"Feature Map {i}", use_container_width=True)
-            time.sleep(1)
+        placeholder.image(feature_map, caption=f"Feature Map {i}", use_container_width=True)
+        time.sleep(1)
 
 
 def display_gram_matrices(gram_matrices, style_feature_maps_indices_names, placeholder, text_placeholder):
@@ -149,4 +149,3 @@ def display_gram_matrices(gram_matrices, style_feature_maps_indices_names, place
         placeholder.image(gram_matrix, caption=f'Gram matrix from layer {style_feature_maps_indices_names[1][i]}', use_container_width=True)
         time.sleep(1)
         st.session_state.gram_matrices.append(gram_matrix)
-

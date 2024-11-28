@@ -26,6 +26,7 @@ def prepare_img_from_pil(image: Image.Image, device: torch.device):
     transform = transforms.Compose([
         transforms.Resize(target_shape),  # Resize to the given shape
         transforms.ToTensor(),
+        transforms.Lambda(lambda x: x.mul(255)),  # Scale to [0, 255]
         transforms.Normalize(mean=IMAGENET_MEAN_255, std=IMAGENET_STD_NEUTRAL)
     ])
     

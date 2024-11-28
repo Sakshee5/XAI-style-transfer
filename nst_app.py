@@ -82,7 +82,7 @@ with st.sidebar:
     iterations = st.slider("Set number of Iterations", min_value=100, max_value=3000, value=300)
 
 if tab == "Home":
-    with open("description.md", "r") as f:
+    with open("docs/description.md", "r") as f:
         markdown_text = f.read()
 
     st.write(markdown_text)
@@ -377,7 +377,7 @@ elif tab == "Neural Style Transfer":
 
 
 if tab=="Insights":
-    with open("insights.md", "r") as f:
+    with open("docs/insights.md", "r") as f:
         markdown_text = f.read()
 
     st.markdown(markdown_text)
