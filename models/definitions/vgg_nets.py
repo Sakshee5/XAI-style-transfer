@@ -188,11 +188,15 @@ class Vgg16_GradCAM(torch.nn.Module):
             for param in self.parameters():
                 param.requires_grad = False
 
-    def save_gradients(self, grad):
-        """
-        Hook method to save gradients when called
-        """
-        self.gradients = grad
+        # Create dictionaries to store gradients for multiple layers
+        self.content_gradients = None
+        self.style_gradients = {}
+
+    def get_content_gradients(self, grad):
+        self.content_gradients = grad
+
+    def get_style_gradients(self, grad):
+        self.style_gradients = grad
 
     def forward(self, x):
         # Pass through first slice
@@ -207,16 +211,17 @@ class Vgg16_GradCAM(torch.nn.Module):
         x = self.slice3(x)
         relu3_3 = x
 
-        # For Grad-CAM, we want to capture gradients at this layer
-        # Enable gradient computation
-        relu3_3.requires_grad_()
-        
-        # Register a hook to save gradients
-        relu3_3.register_hook(self.save_gradients)
-
         # Pass through fourth slice
         x = self.slice4(x)
         relu4_3 = x
+
+        # Hook content layer (e.g., conv4_2)
+        relu3_3.requires_grad_()
+        relu3_3.register_hook(self.get_content_gradients)
+
+        # Hook style layer (e.g., conv3_1)
+        relu4_3.requires_grad_()
+        relu4_3.register_hook(self.get_style_gradients)
 
         # Create named tuple for outputs
         vgg_outputs = namedtuple("VggOutputs", self.layer_names)
@@ -290,7 +295,6 @@ class Vgg19_GradCAM(torch.nn.Module):
     def __init__(self, content_feature_map_index, requires_grad=False, show_progress=False, use_relu=True):
         super().__init__()
         vgg_pretrained_features = models.vgg19(pretrained=True, progress=show_progress).features
-        self.gradients = None  # To store gradients
 
         if use_relu:
             self.layer_names = ['relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'conv4_2', 'relu5_1']
@@ -348,7 +352,6 @@ class Vgg19_GradCAM(torch.nn.Module):
         conv4_2 = x
         x = self.slice6(x)
         layer5_1 = x
-
         
         # Hook content layer (e.g., conv4_2)
         layer4_1.requires_grad_()
