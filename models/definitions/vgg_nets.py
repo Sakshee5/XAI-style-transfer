@@ -169,93 +169,17 @@ class Vgg16_GradCAM(torch.nn.Module):
         # relu2_2.requires_grad_()
         # relu2_2.register_hook(self.get_style_gradients)
 
-        relu4_3.requires_grad_()
-        relu4_3.register_hook(self.get_style_gradients)
+        relu4_1.requires_grad_()
+        relu4_1.register_hook(self.get_style_gradients)
+
+        # relu5_1.requires_grad_()
+        # relu5_1.register_hook(self.get_style_gradients)
 
         vgg_outputs = namedtuple("VggOutputs", self.layer_names)
         out = vgg_outputs(relu1_1, relu2_1, relu2_2, relu3_1, relu3_2, relu4_1, conv4_2, relu4_3, relu5_1)
 
         return out
     
-
-# class Vgg16_GradCAM(torch.nn.Module):
-#     """
-#     VGG-16 implementation with Grad-CAM capabilities.
-#     Allows capturing gradients for visualization and interpretation.
-#     """
-#     def __init__(self, content_feature_map_index, requires_grad=False, show_progress=False):
-#         super().__init__()
-#         vgg_pretrained_features = models.vgg16(pretrained=True, progress=show_progress).features
-        
-#         # Store gradients for later retrieval
-#         self.gradients = None
-        
-#         # Define layers to expose
-#         self.layer_names = ['relu1_2', 'relu2_2', 'relu3_3', 'relu4_3']
-#         self.content_feature_maps_index = content_feature_map_index
-#         self.style_feature_maps_indices = list(range(len(self.layer_names)))
-
-#         # Create sequential slices similar to original implementation
-#         self.slice1 = torch.nn.Sequential()
-#         self.slice2 = torch.nn.Sequential()
-#         self.slice3 = torch.nn.Sequential()
-#         self.slice4 = torch.nn.Sequential()
-        
-#         for x in range(4):
-#             self.slice1.add_module(str(x), vgg_pretrained_features[x])
-#         for x in range(4, 9):
-#             self.slice2.add_module(str(x), vgg_pretrained_features[x])
-#         for x in range(9, 16):
-#             self.slice3.add_module(str(x), vgg_pretrained_features[x])
-#         for x in range(16, 23):
-#             self.slice4.add_module(str(x), vgg_pretrained_features[x])
-
-#         if not requires_grad:
-#             for param in self.parameters():
-#                 param.requires_grad = False
-
-#         # Initialize dictionaries to store gradients
-#         self.content_gradients = {}
-#         self.style_gradients = {}
-        
-#     def get_content_gradients(self, grad):
-#         self.content_gradients = grad
-
-#     def get_style_gradients(self, grad):
-#         self.style_gradients = grad
-
-#     def forward(self, x):
-#         # Pass through first slice
-#         x = self.slice1(x)
-#         relu1_2 = x
-
-#         # Pass through second slice
-#         x = self.slice2(x)
-#         relu2_2 = x
-
-#         # Pass through third slice
-#         x = self.slice3(x)
-#         relu3_3 = x
-
-#         # Pass through fourth slice
-#         x = self.slice4(x)
-#         relu4_3 = x
-
-#         # Ensure the activations require gradients
-#         relu3_3.requires_grad_()  # Set requires_grad to True for the activations
-#         relu4_3.requires_grad_()  # Set requires_grad to True for the style layer
-
-#         # Register hook for the content layer (conv4_2)
-#         relu4_3.register_hook(self.get_content_gradients)
-#         # Register hook for the style layer (conv3_1)
-#         relu4_3.register_hook(self.get_style_gradients)
-
-#         # Create named tuple for outputs
-#         vgg_outputs = namedtuple("VggOutputs", self.layer_names)
-#         out = vgg_outputs(relu1_2, relu2_2, relu3_3, relu4_3)
-        
-#         return out
-
 
 class Vgg19(torch.nn.Module):
     """
@@ -386,13 +310,21 @@ class Vgg19_GradCAM(torch.nn.Module):
 
         # Ensure the activations require gradients
         conv4_2.requires_grad_()  # Set requires_grad to True for the activations
-        layer3_1.requires_grad_()  # Set requires_grad to True for the style layer
+        # layer1_1.requires_grad_()  # Set requires_grad to True for the style layer
+        # layer2_1.requires_grad_()  # Set requires_grad to True for the style layer
+        # layer3_1.requires_grad_()  # Set requires_grad to True for the style layer
+        layer4_1.requires_grad_()  # Set requires_grad to True for the style layer
+        # layer5_1.requires_grad_()  # Set requires_grad to True for the style layer
 
         # Register hook for the content layer (conv4_2)
         conv4_2.register_hook(self.get_content_gradients)
-        # Register hook for the style layer (conv3_1)
-        layer3_1.register_hook(self.get_style_gradients)
 
+        # Register hook for the style layers (conv3_1)
+        # layer1_1.register_hook(self.get_style_gradients)
+        # layer2_1.register_hook(self.get_style_gradients)
+        # layer3_1.register_hook(self.get_style_gradients)
+        layer4_1.register_hook(self.get_style_gradients)
+        # layer5_1.register_hook(self.get_style_gradients)
 
         # Output the activations for the layers
         vgg_outputs = namedtuple("VggOutputs", self.layer_names)

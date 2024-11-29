@@ -1,8 +1,6 @@
-import cv2 as cv
 import numpy as np
 import torch
 from torchvision import transforms
-import os
 from PIL import Image
 from models.definitions.vgg_nets import Vgg16, Vgg19, Vgg16_GradCAM, Vgg19_GradCAM
 
