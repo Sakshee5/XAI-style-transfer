@@ -71,7 +71,7 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
         for it in range(config['iterations']):
             loss, _ = tuning_step(optimizing_img)
             with torch.no_grad():
-                text_placeholder_2.write(f'loss={loss:10.8f}')
+                text_placeholder_2.write(f'MSE loss={loss:10.8f}')
                 current_img = optimizing_img.clone().squeeze(0).cpu().numpy()
                 current_img = utils.to_image_format(current_img)  # Normalize and convert to uint8
 
@@ -105,7 +105,7 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
 
             # Log the loss and gradients
             with torch.no_grad():
-                text_placeholder_2.write(f'loss={loss.item()}')
+                text_placeholder_2.write(f'MSE loss={loss.item()}')
              
                 current_img = optimizing_img.clone().squeeze(0).cpu().numpy()
                 current_img = utils.to_image_format(current_img)  # Normalize and convert to uint8

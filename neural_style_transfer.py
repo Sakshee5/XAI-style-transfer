@@ -88,15 +88,15 @@ def neural_style_transfer(config, placeholder, text_placeholder, grad_cam_conten
                 activations_content = neural_net(optimizing_img).conv4_2  # Access the activations for 'conv4_2'
                 gradients_content = neural_net.content_gradients  # Get the gradients from the hook
 
-                activations_style = neural_net(optimizing_img).relu3_1  # Access the activations for 'relu3_1'
+                activations_style = neural_net(optimizing_img).relu4_1  # Access the activations for 'relu3_1'
                 gradients_style = neural_net.style_gradients  # Get the gradients from the hook
 
             if config["model"]=='vgg16':
                 # Extract activations and gradients for Grad-CAM
-                activations_content = neural_net(optimizing_img).relu3_3  # Access the activations for 'conv4_2'
+                activations_content = neural_net(optimizing_img).conv4_2  # Access the activations for 'conv4_2'
                 gradients_content = neural_net.content_gradients  # Get the gradients from the hook
 
-                activations_style = neural_net(optimizing_img).relu4_3  # Access the activations for 'relu3_1'
+                activations_style = neural_net(optimizing_img).relu4_1  # Access the activations for 'relu3_1'
                 gradients_style = neural_net.style_gradients  # Get the gradients from the hook
 
             # Get Grad-CAM map
@@ -138,15 +138,15 @@ def neural_style_transfer(config, placeholder, text_placeholder, grad_cam_conten
                 activations_content = neural_net(optimizing_img).conv4_2  # Access the activations for 'conv4_2'
                 gradients_content = neural_net.content_gradients  # Get the gradients from the hook
 
-                activations_style = neural_net(optimizing_img).relu3_1  # Access the activations for 'relu3_1'
+                activations_style = neural_net(optimizing_img).relu4_1  # Access the activations for 'relu3_1'
                 gradients_style = neural_net.style_gradients  # Get the gradients from the hook
 
             if config["model"]=='vgg16':
                 # Extract activations and gradients for Grad-CAM
-                activations_content = neural_net(optimizing_img).relu3_3  # Access the activations for 'conv4_2'
+                activations_content = neural_net(optimizing_img).conv4_2  # Access the activations for 'conv4_2'
                 gradients_content = neural_net.content_gradients  # Get the gradients from the hook
 
-                activations_style = neural_net(optimizing_img).relu4_3  # Access the activations for 'relu3_1'
+                activations_style = neural_net(optimizing_img).relu4_1  # Access the activations for 'relu3_1'
                 gradients_style = neural_net.style_gradients  # Get the gradients from the hook
             
              # Get Grad-CAM map

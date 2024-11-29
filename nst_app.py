@@ -53,7 +53,7 @@ def set_config(content_img=None,
         "style_img": style_img,
         "model": model,
         "optimizer": optimizer,
-        "iterations": iterations-7,
+        "iterations": iterations-8,
         "content_feature_map_index": feature_map_index,
         "content_weight":content_weight,
         "style_weight": style_weight,
@@ -79,7 +79,7 @@ with st.sidebar:
     optimizer = st.radio("Select an optimizer:", ['lbfgs', 'adam'],
                          help="LBFGS is a more precise optimizer but requires more memory. Adam is efficent but takes longer to converge.")
     
-    iterations = st.slider("Set number of Iterations", min_value=100, max_value=3000, value=300)
+    iterations = st.slider("Set number of Iterations", min_value=10, max_value=3000, value=300)
 
 if tab == "Home":
     with open("docs/description.md", "r") as f:
@@ -351,18 +351,14 @@ elif tab == "Neural Style Transfer":
         st.markdown("---")
         st.subheader("Use the slider to explore the style transfer progress..")
         col1, col2, col3 = st.columns(3)
+        container_width = 350  # or you can get this dynamically if needed (like st.container().width)
+        img_width, img_height = content_image.size
+        aspect_ratio = img_width / img_height
+        resized_height = int(container_width / aspect_ratio) - 80
+        
         with col2:
-            st.text("")
-            st.text("")
-            st.text("")
-            st.text("")
-            st.text("")
+            st.markdown(f"<div style='height:{resized_height}px;'></div>", unsafe_allow_html=True)
             style_transfer_no = st.slider("Iteration", min_value=1, max_value=iterations, value=1) 
-            st.text("")
-            st.text("")
-            st.text("")
-            st.text("")
-            st.text("")
             st.image(st.session_state.style_transfer_progress[style_transfer_no], caption=f"Iteration {style_transfer_no}", use_container_width=True)
             
 
