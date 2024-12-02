@@ -53,7 +53,7 @@ def set_config(content_img=None,
         "style_img": style_img,
         "model": model,
         "optimizer": optimizer,
-        "iterations": iterations-8,
+        "iterations": iterations-7,
         "content_feature_map_index": feature_map_index,
         "content_weight":content_weight,
         "style_weight": style_weight,
@@ -271,7 +271,7 @@ elif tab == "Neural Style Transfer":
         col1, col2 = st.columns(2)
 
         with col1:
-            content_weight = st.slider("Content Weight", min_value=1e3, max_value=1e6, value=1e5, step=1e3, format="%e")
+            content_weight = st.slider("Content Weight", min_value=1e3, max_value=1e7, value=7e5, step=1e3, format="%e")
 
         with col2:
             st.markdown("""Determines how strongly the structural details of the content image are preserved during reconstruction. Use a high value to closely resemble the content image's structure.  
@@ -281,7 +281,7 @@ elif tab == "Neural Style Transfer":
         col3, col4 = st.columns(2)
 
         with col3:
-            style_weight = st.slider("Style Weight", min_value=1e3, max_value=1e5, value=3e4, step=1e3, format="%e")
+            style_weight = st.slider("Style Weight", min_value=1e2, max_value=1e6, value=4e3, step=1e3, format="%e")
 
         with col4:
             st.markdown("""Controls how strongly the style patterns of the style image influence the reconstruction.Increase this to prioritize reproducing style features (e.g., brushstrokes, textures).  

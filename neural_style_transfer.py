@@ -164,11 +164,11 @@ def neural_style_transfer(config, placeholder, text_placeholder, grad_cam_conten
 
                # Visualize Grad-CAM
                 grad_cam_content_image = visualize_grad_cam(grad_cam_map_content, content_img)
-                grad_cam_content_placeholder.image(grad_cam_content_image, caption="Grad-CAM", use_container_width=True)
+                grad_cam_content_placeholder.image(grad_cam_content_image, caption="Grad-CAM: VGG Layer conv4_2", use_container_width=True)
                 st.session_state.grad_cam_content.append(grad_cam_content_image)
 
                 grad_cam_style_image = visualize_grad_cam(grad_cam_map_style, style_img)
-                grad_cam_style_placeholder.image(grad_cam_style_image, caption="Grad-CAM", use_container_width=True)
+                grad_cam_style_placeholder.image(grad_cam_style_image, caption="Grad-CAM: VGG Layer relu4_1", use_container_width=True)
                 st.session_state.grad_cam_style.append(grad_cam_style_image)
                
             cnt += 1
