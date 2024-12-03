@@ -1,6 +1,7 @@
 from collections import namedtuple
 import torch
 from torchvision import models
+from torchvision.models import VGG19_Weights
 
 # Source: https://github.com/pytorch/vision/blob/3c254fb7af5f8af252c24e89949c54a3461ff0be/torchvision/models/vgg.py
 
@@ -8,7 +9,7 @@ class Vgg16(torch.nn.Module):
     """Only those layers are exposed which have already proven to work nicely."""
     def __init__(self, content_feature_map_index, requires_grad=False, show_progress=False):
         super().__init__()
-        vgg_pretrained_features = models.vgg16(pretrained=True, progress=show_progress).features
+        vgg_pretrained_features = models.vgg16(weights=VGG19_Weights.IMAGENET1K_V1, progress=show_progress).features
         self.layer_names = ['relu1_2', 'relu2_2', 'relu3_3', 'relu4_3']
         self.content_feature_maps_index = content_feature_map_index  # relu2_2
         self.style_feature_maps_indices = list(range(len(self.layer_names)))  # all layers used for style representation
@@ -245,7 +246,7 @@ class Vgg19(torch.nn.Module):
 class Vgg19_GradCAM(torch.nn.Module):
     def __init__(self, content_feature_map_index, requires_grad=False, show_progress=False, use_relu=True):
         super().__init__()
-        vgg_pretrained_features = models.vgg19(pretrained=True, progress=show_progress).features
+        vgg_pretrained_features = models.vgg19(weights=VGG19_Weights.IMAGENET1K_V1, progress=show_progress).features
 
         if use_relu:
             self.layer_names = ['relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'conv4_2', 'relu5_1']

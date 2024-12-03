@@ -46,6 +46,7 @@ def set_config(content_img=None,
                tv_weight=1e0, 
                init_method='content', 
                noise="white",
+               img_size=500,
                ):
 
     config = {
@@ -60,6 +61,7 @@ def set_config(content_img=None,
         "tv_weight": tv_weight,
         "init_method": init_method,
         "noise": noise,
+        "img_size": img_size,
     }
     return config
 
@@ -80,6 +82,8 @@ with st.sidebar:
                          help="LBFGS is a more precise optimizer but requires more memory. Adam is efficent but takes longer to converge.")
     
     iterations = st.slider("Set number of Iterations", min_value=10, max_value=3000, value=300)
+
+    image_width = st.slider("Set image size", min_value=100, max_value=1000, value=500, help='Greater the image size, better the results. However, it affects the computational resources required and thus increases training time.')
 
 if tab == "Home":
     with open("docs/description.md", "r") as f:
@@ -127,7 +131,7 @@ Visualize how the reconstruction process starts with noise and iteratively refin
         st.session_state['style_transfer_progress'] = []
 
         st.subheader("Reconstructing content from noise! Watch the progress below...")
-        config = set_config(content_img=content_image, style_img=None, feature_map_index=feature_map_index, noise=init_noise, model=model, optimizer=optimizer, iterations=iterations)
+        config = set_config(content_img=content_image, style_img=None, feature_map_index=feature_map_index, noise=init_noise, model=model, optimizer=optimizer, iterations=iterations, img_size=image_width)
         
         col1, col2, col3 = st.columns(3)
 
@@ -202,7 +206,7 @@ This process insight into how neural networks learn and represent stylistic aspe
         st.session_state['style_transfer_progress'] = []
 
         st.subheader("Reconstructing style from noise! Watch the progress below...")
-        config = set_config(content_img=None, style_img=style_image, noise=init_noise, model=model, optimizer=optimizer, iterations=iterations)
+        config = set_config(content_img=None, style_img=style_image, noise=init_noise, model=model, optimizer=optimizer, iterations=iterations, img_size=image_width)
         
         col1, col2, col3 = st.columns(3)
 
@@ -271,7 +275,7 @@ elif tab == "Neural Style Transfer":
         col1, col2 = st.columns(2)
 
         with col1:
-            content_weight = st.slider("Content Weight", min_value=1e3, max_value=1e7, value=7e5, step=1e3, format="%e")
+            content_weight = st.slider("Content Weight", min_value=1e3, max_value=1e7, value=1e6, step=1e3, format="%e")
 
         with col2:
             st.markdown("""Determines how strongly the structural details of the content image are preserved during reconstruction. Use a high value to closely resemble the content image's structure.  
@@ -281,7 +285,7 @@ elif tab == "Neural Style Transfer":
         col3, col4 = st.columns(2)
 
         with col3:
-            style_weight = st.slider("Style Weight", min_value=1e2, max_value=1e6, value=4e3, step=1e3, format="%e")
+            style_weight = st.slider("Style Weight", min_value=1e2, max_value=1e6, value=3e4, step=1e3, format="%e")
 
         with col4:
             st.markdown("""Controls how strongly the style patterns of the style image influence the reconstruction.Increase this to prioritize reproducing style features (e.g., brushstrokes, textures).  
@@ -325,7 +329,7 @@ elif tab == "Neural Style Transfer":
 
         if start_style_transfer and content_image and style_image:
             st.subheader("Transferring style! Watch the progress below...")
-            config = set_config(content_img=content_image, style_img=style_image, content_weight=content_weight, style_weight=style_weight, tv_weight=tv_weight, init_method=init_method, noise=init_noise, model=model, optimizer=optimizer, iterations=iterations)
+            config = set_config(content_img=content_image, style_img=style_image, content_weight=content_weight, style_weight=style_weight, tv_weight=tv_weight, init_method=init_method, noise=init_noise, model=model, optimizer=optimizer, iterations=iterations, img_size=image_width)
 
             col1, col2, col3 = st.columns(3)
 
@@ -351,7 +355,7 @@ elif tab == "Neural Style Transfer":
         st.markdown("---")
         st.subheader("Use the slider to explore the style transfer progress..")
         col1, col2, col3 = st.columns(3)
-        container_width = 350  # or you can get this dynamically if needed (like st.container().width)
+        container_width = 350 
         img_width, img_height = content_image.size
         aspect_ratio = img_width / img_height
         resized_height = int(container_width / aspect_ratio) - 80

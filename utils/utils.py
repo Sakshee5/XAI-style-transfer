@@ -9,7 +9,7 @@ IMAGENET_MEAN_255 = [123.675, 116.28, 103.53]
 IMAGENET_STD_NEUTRAL = [1, 1, 1]
 
 
-def prepare_img_from_pil(image: Image.Image, device: torch.device):
+def prepare_img_from_pil(image: Image.Image, device: torch.device, img_width):
     """
     Prepares an image from a PIL.Image object for use in PyTorch models.
     """
@@ -17,7 +17,7 @@ def prepare_img_from_pil(image: Image.Image, device: torch.device):
         image = image.convert('RGB')
 
     original_width, original_height = image.size
-    new_width = 250
+    new_width = img_width
     new_height = int((new_width / original_width) * original_height)
     target_shape = (new_height, new_width)
 
@@ -65,6 +65,7 @@ def prepare_model(content_feature_map_index, model, device, gradCAM=False):
 
     content_fms_index_name = (content_feature_maps_index, layer_names[content_feature_maps_index])
     style_fms_indices_names = (style_feature_maps_indices, layer_names)
+    
     return model.to(device).eval(), content_fms_index_name, style_fms_indices_names
 
 
@@ -83,23 +84,29 @@ def total_variation(y):
            torch.sum(torch.abs(y[:, :, :-1, :] - y[:, :, 1:, :]))
 
 
-def to_image_format(tensor):
+def to_image_format(tensor, gamma=1.3):
     """
     Converts a PyTorch tensor or NumPy array to a uint8 image format suitable for display.
-    Assumes the input tensor/array has values in a non-standard range (e.g., -90 to 90).
+    Includes gamma correction to reduce brightness and improve contrast.
     """
     if isinstance(tensor, torch.Tensor):
         tensor = tensor.detach().cpu().numpy()  # Move to CPU and convert to NumPy array
 
     # Ensure dimensions are correct (e.g., C x H x W to H x W x C)
     if tensor.ndim == 3 and tensor.shape[0] in [1, 3]:  # Channels-first
-        tensor = np.transpose(tensor, (1, 2, 0)) 
+        tensor = np.transpose(tensor, (1, 2, 0))
 
-    # Normalize to range [0, 255]
+    # Normalize to range [0, 1]
     tensor_min, tensor_max = tensor.min(), tensor.max()
-    tensor = (tensor - tensor_min) / (tensor_max - tensor_min) * 255.0
-    tensor = np.clip(tensor, 0, 255).astype(np.uint8)
+    tensor = (tensor - tensor_min) / (tensor_max - tensor_min)
 
+    # Apply gamma correction to control brightness (gamma > 1 for less brightness, < 1 for more)
+    tensor = np.power(tensor, gamma)
+
+    # Scale to [0, 255]
+    tensor = tensor * 255.0
+    tensor = np.nan_to_num(tensor, nan=0.0, posinf=255, neginf=0)
+    tensor = np.clip(tensor, 0, 255).astype(np.uint8)
     return tensor
 
 

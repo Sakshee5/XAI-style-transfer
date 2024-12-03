@@ -36,7 +36,7 @@ def reconstruct_image_from_representation(config, representation_placeholder, vi
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
-    img = utils.prepare_img_from_pil(uploaded_image, device) 
+    img = utils.prepare_img_from_pil(uploaded_image, device, config['img_size']) 
     
     if config['noise'] == 'white':
         white_noise_img = np.random.uniform(-90., 90., img.shape).astype(np.float32)

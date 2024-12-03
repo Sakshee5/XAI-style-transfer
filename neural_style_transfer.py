@@ -46,8 +46,8 @@ def make_tuning_step(neural_net, optimizer, target_representations, content_feat
 def neural_style_transfer(config, placeholder, text_placeholder, grad_cam_content_placeholder, grad_cam_style_placeholder):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    content_img = utils.prepare_img_from_pil(config["content_img"], device) 
-    style_img = utils.prepare_img_from_pil(config["style_img"].resize(config["content_img"].size), device)
+    content_img = utils.prepare_img_from_pil(config["content_img"], device, config['img_size']) 
+    style_img = utils.prepare_img_from_pil(config["style_img"].resize(config["content_img"].size), device, config['img_size'])
 
     if config['init_method'] == 'random':
         if config['noise'] == 'white':
@@ -203,10 +203,13 @@ def visualize_grad_cam(grad_cam_map, original_image):
     )
 
     # Convert Grad-CAM map to 3 channels (for overlaying)
+    grad_cam_map_resized = np.nan_to_num(grad_cam_map_resized, nan=0.0, posinf=255, neginf=0)
     grad_cam_map_resized = (grad_cam_map_resized * 255).astype(np.uint8)
     grad_cam_map_colored = cv2.applyColorMap(grad_cam_map_resized, cv2.COLORMAP_JET)
 
     # Blend Grad-CAM map with original image
+    original_image = np.nan_to_num(original_image, nan=0.0, posinf=255, neginf=0).astype(np.uint8)
+    grad_cam_map_colored = np.nan_to_num(grad_cam_map_colored, nan=0.0, posinf=255, neginf=0).astype(np.uint8)
     grad_cam_image = cv2.addWeighted(original_image.astype(np.uint8), 0.5, grad_cam_map_colored, 0.5, 0)
 
     return grad_cam_image

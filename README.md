@@ -1,5 +1,7 @@
 # Art Meets AI: An XAI-Driven Visual Exploration of Neural Style Transfer
 
+Try it out for yourself here! [Deployed Streamlit App](https://explainable-style-transfer.streamlit.app/)
+
 ## Project Overview
 
 ### What is Neural Style Transfer?
@@ -64,6 +66,10 @@ streamlit run nst_app.py
 
 ## References
 
+- https://cv-foundation.org/openaccess/content_cvpr_2016/papers/Gatys_Image_Style_Transfer_CVPR_2016_paper.pdf
+- https://fritz.ai/style-transfer/
+- https://towardsdatascience.com/light-on-math-machine-learning-intuitive-guide-to-neural-style-transfer-ef88e46697ee
+- https://towardsdatascience.com/breaking-down-leon-gatys-neural-style-transfer-in-pytorch-faf9f0eb79db
 - https://github.com/pytorch/examples/tree/main/fast_neural_style
 - https://github.com/gordicaleksa/pytorch-neural-style-transfer
 - https://www.youtube.com/watch?v=S78LQebx6jo&list=PLBoQnSflObcmbfshq9oNs41vODgXG-608
