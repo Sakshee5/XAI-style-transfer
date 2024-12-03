@@ -2,6 +2,8 @@
 
 Try it out for yourself here! [Deployed Streamlit App](https://explainable-style-transfer.streamlit.app/)
 
+** NOTE: The deployed version runs on CPU. Code and requirements can be found on branch: streamlit-cpu.
+
 ## Project Overview
 
 ### What is Neural Style Transfer?
