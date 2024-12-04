@@ -4,6 +4,10 @@ Try it out for yourself here! [Deployed Streamlit App](https://explainable-style
 
 ** NOTE: The deployed version runs on CPU. Code and requirements can be found on branch: streamlit-cpu.
 
+<video src="assets/video_snippet.mp4" controls width="600">
+</video>
+
+
 ## Project Overview
 
 ### What is Neural Style Transfer?
